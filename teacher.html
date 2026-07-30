@@ -23,9 +23,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        .app-header {
-            background: var(--card-bg); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 10;
-        }
+        .app-header { background: var(--card-bg); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 10; }
         .app-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--teacher-color); }
 
         .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
@@ -65,19 +63,18 @@
 
     <div class="app-header">
         <h2>서인천고 교사 대시보드</h2>
-        <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="refreshDashboard()">🔄 동기화</button>
+        <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="listenRealtimeData()">🔄 새로고침</button>
     </div>
 
     <div class="main-content">
-
-        <!-- 1. DASHBOARD OVERVIEW -->
+        <!-- 1. 학급 전체 현황 -->
         <div id="dash-overview" class="tab-content active">
             <div class="filter-bar">
                 <strong>📅 조회 기간 설정</strong>
                 <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="date" id="filter-start-date" value="2026-08-01" onchange="refreshDashboard()" style="font-size:0.8rem; padding:6px;">
+                    <input type="date" id="filter-start-date" value="2026-08-01" onchange="listenRealtimeData()" style="font-size:0.8rem; padding:6px;">
                     <span>~</span>
-                    <input type="date" id="filter-end-date" value="2026-08-31" onchange="refreshDashboard()" style="font-size:0.8rem; padding:6px;">
+                    <input type="date" id="filter-end-date" value="2026-08-31" onchange="listenRealtimeData()" style="font-size:0.8rem; padding:6px;">
                 </div>
             </div>
 
@@ -88,17 +85,19 @@
             </div>
 
             <div class="card">
-                <div class="card-title">학습 수집 현황</div>
+                <div class="card-title">학습 수집 현황 (구글 시트 연동)</div>
                 <table>
                     <thead>
                         <tr><th>날짜</th><th>학생</th><th>순공</th><th>달성도</th><th>상세</th></tr>
                     </thead>
-                    <tbody id="teacher-student-table-body"></tbody>
+                    <tbody id="teacher-student-table-body">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">불러오는 중...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 2. STUDENT DETAIL VIEW -->
+        <!-- 2. 학생별 상세 점검 -->
         <div id="dash-students" class="tab-content">
             <div class="card">
                 <div class="card-title">
@@ -129,30 +128,23 @@
 
                     <div class="card-title">일자별 세부 내역</div>
                     <div id="detail-daily-history-container"></div>
-
-                    <div style="margin-top: 16px; border-top: 2px solid #0ea5e9; padding-top: 12px;">
-                        <strong style="color: #0ea5e9; font-size: 0.9rem;">💌 학생 어플로 피드백 전송</strong>
-                        <textarea id="teacher-feedback-input" rows="3" placeholder="선생님 피드백 입력 (학생 피드백 탭에 빨간 알림 전송)" style="margin-top:8px;"></textarea>
-                        <button class="btn" style="width: 100%; margin-top: 8px;" onclick="sendFeedbackToStudent()">피드백 전송</button>
-                    </div>
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- 하단 교사 전용 탭 바 -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('dash-overview')">
-            <span class="icon">📈</span><span>학급 현황</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('dash-students')">
-            <span class="icon">👨‍🎓</span><span>학생 점검</span>
-        </div>
+        <div class="nav-item active" onclick="switchTab('dash-overview')"><span class="icon">📈</span><span>학급 현황</span></div>
+        <div class="nav-item" onclick="switchTab('dash-students')"><span class="icon">👨‍🎓</span><span>학생 점검</span></div>
     </div>
 
     <script>
-        const plannerChannel = new BroadcastChannel('seoincheon_planner_channel');
+        // === [Google Apps Script URL 설정] ===
+        // ⚠️ 아래 큰따옴표 안에 발급받은 Apps Script 웹 앱 URL 전체를 넣어주세요.
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1eKRk58bZVf_QnTYf-AY3hgDpsjBUJZEnYFtK_lQYNxCzgfzHGokpJ9zOTnV6Ce0/exec";
+
+        let cachedSubmissions = [];
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -161,23 +153,34 @@
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
 
-            if(tabId === 'dash-overview') refreshDashboard();
             if(tabId === 'dash-students') updateStudentSelectOptions();
         }
 
-        function refreshDashboard() {
-            const history = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
+        // 구글 스프레드시트 데이터 불러오기
+        function listenRealtimeData() {
             const startDate = document.getElementById('filter-start-date').value;
             const endDate = document.getElementById('filter-end-date').value;
 
-            const filtered = history.filter(item => item.date >= startDate && item.date <= endDate);
+            fetch(GAS_WEB_APP_URL)
+            .then(res => res.json())
+            .then(data => {
+                cachedSubmissions = data.filter(item => item.date >= startDate && item.date <= endDate);
+                renderDashboard(cachedSubmissions);
+            })
+            .catch(err => {
+                console.error("데이터 통신 오류:", err);
+                document.getElementById('teacher-student-table-body').innerHTML = 
+                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. URL을 확인하세요.</td></tr>`;
+            });
+        }
+
+        function renderDashboard(dataList) {
             const tbody = document.getElementById('teacher-student-table-body');
             tbody.innerHTML = '';
+            document.getElementById('stat-total-count').innerText = `${dataList.length}건`;
 
-            document.getElementById('stat-total-count').innerText = `${filtered.length}건`;
-
-            if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">기록이 없습니다.</td></tr>`;
+            if(dataList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">해당 기간 내 전송된 기록이 없습니다.</td></tr>`;
                 document.getElementById('stat-avg-productivity').innerText = '0%';
                 document.getElementById('stat-total-studytime').innerText = '0시간';
                 return;
@@ -185,7 +188,7 @@
 
             let totalProd = 0; let totalHours = 0;
 
-            filtered.sort((a, b) => b.date.localeCompare(a.date)).forEach(item => {
+            dataList.sort((a, b) => b.date.localeCompare(a.date)).forEach(item => {
                 totalProd += parseInt(item.productivity) || 0;
                 const match = (item.studyTime || '').match(/\d+/);
                 if(match) totalHours += parseInt(match[0]);
@@ -201,19 +204,18 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('stat-avg-productivity').innerText = `${Math.round(totalProd / filtered.length)}%`;
+            document.getElementById('stat-avg-productivity').innerText = `${Math.round(totalProd / dataList.length)}%`;
             document.getElementById('stat-total-studytime').innerText = `${totalHours}시간`;
 
             updateStudentSelectOptions();
         }
 
         function updateStudentSelectOptions() {
-            const history = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
             const select = document.getElementById('teacher-student-select');
             const currentVal = select.value;
 
             const studentMap = {};
-            history.forEach(item => { studentMap[item.id] = item.name; });
+            cachedSubmissions.forEach(item => { studentMap[item.id] = item.name; });
 
             select.innerHTML = '<option value="">학생 선택</option>';
             Object.keys(studentMap).forEach(id => {
@@ -238,9 +240,8 @@
 
             const startDate = document.getElementById('detail-start-date').value;
             const endDate = document.getElementById('detail-end-date').value;
-            const history = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
-            const myHistory = history.filter(item => item.id === studentId && item.date >= startDate && item.date <= endDate);
 
+            const myHistory = cachedSubmissions.filter(item => item.id === studentId && item.date >= startDate && item.date <= endDate);
             container.style.display = 'block';
 
             if(myHistory.length === 0) {
@@ -262,18 +263,13 @@
 
                 const dayCard = document.createElement('div');
                 dayCard.style.cssText = "background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px;";
-                
-                let todosHtml = '';
-                if(record.todos && record.todos.length > 0) {
-                    record.todos.forEach(t => { todosHtml += `<li style="font-size:0.8rem; margin-bottom:2px;">[${t.status}] ${t.text}</li>`; });
-                } else { todosHtml = '<li style="font-size:0.8rem; color: var(--text-muted);">To-Do 없음</li>'; }
 
                 dayCard.innerHTML = `
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
                         <strong>📅 ${record.date}</strong>
                         <span>순공: ${record.studyTime || '-'} (${record.productivity})</span>
                     </div>
-                    <ul style="padding-left: 16px;">${todosHtml}</ul>
+                    <div style="font-size:0.8rem; color:#64748b;">To-Do 등록 개수: ${record.todoCount || 0}개</div>
                 `;
                 dailyContainer.appendChild(dayCard);
             });
@@ -282,28 +278,7 @@
             document.getElementById('detail-motto').innerText = latestMotto;
         }
 
-        function sendFeedbackToStudent() {
-            const studentId = document.getElementById('teacher-student-select').value;
-            const content = document.getElementById('teacher-feedback-input').value.trim();
-
-            if(!studentId || !content) { alert('학생 선택 및 피드백 내용을 입력해 주세요.'); return; }
-
-            let allFeedbacks = JSON.parse(localStorage.getItem('teacher_feedbacks') || '{}');
-            if(!allFeedbacks[studentId]) allFeedbacks[studentId] = [];
-
-            allFeedbacks[studentId].push({ date: new Date().toLocaleString('ko-KR'), content: content, read: false });
-            localStorage.setItem('teacher_feedbacks', JSON.stringify(allFeedbacks));
-
-            plannerChannel.postMessage({ type: 'NEW_FEEDBACK', targetId: studentId });
-            document.getElementById('teacher-feedback-input').value = '';
-            alert(`[전송 완료] 학생 어플 피드백 탭에 빨간 알림이 도착합니다.`);
-        }
-
-        plannerChannel.onmessage = (event) => {
-            if (event.data && event.data.type === 'NEW_SUBMISSION') refreshDashboard();
-        };
-
-        window.onload = function() { refreshDashboard(); };
+        window.onload = function() { listenRealtimeData(); };
     </script>
 </body>
 </html>
