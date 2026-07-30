@@ -2,214 +2,153 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>서인천고등학교 1학년부 - 교사 대시보드</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>서인천고등학교 - 교사 대시보드</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            --teacher-color: #0ea5e9;
             --teacher-grad: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-            --primary-color: #0ea5e9;
-            --primary-light: #e0f2fe;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --sidebar-bg: #0f172a;
-            --text-main: #1e293b;
+            --text-main: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
+            --border-color: #cbd5e1;
             --radius-lg: 16px;
-            --radius-md: 10px;
-            --shadow-sm: 0 2px 8px rgba(14, 165, 233, 0.05);
+            --radius-md: 12px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 24px 16px; z-index: 10; }
-        .sidebar .brand { padding: 0 12px 24px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; }
-        .sidebar .brand h2 { font-size: 1.15rem; font-weight: 700; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
-        .sidebar .brand p { font-size: 0.78rem; color: #94a3b8; }
-        
-        .teacher-badge { display: inline-block; background: #0ea5e9; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-top: 6px; }
+        .app-header {
+            background: var(--card-bg); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 10;
+        }
+        .app-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--teacher-color); }
 
-        .nav-menu { list-style: none; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-        .nav-item { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; border-radius: var(--radius-md); font-size: 0.92rem; color: #94a3b8; font-weight: 500; transition: all 0.2s; }
-        .nav-item:hover { background-color: rgba(255,255,255,0.06); color: #f1f5f9; }
-        .nav-item.active { background: var(--teacher-grad); color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); }
-
-        .main-content { flex: 1; overflow-y: auto; padding: 28px 36px; display: flex; flex-direction: column; gap: 20px; }
+        .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: var(--card-bg); padding: 20px 28px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
-        .header-bar h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 16px; border: 1px solid var(--border-color); margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e0f2fe; display: flex; justify-content: space-between; align-items: center; }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .stat-card { background: white; border-radius: var(--radius-md); padding: 12px; border: 1px solid var(--border-color); }
+        .stat-card .lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+        .stat-card .val { font-size: 1.3rem; font-weight: 800; color: var(--teacher-color); margin-top: 4px; }
 
-        .card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 24px; }
-        .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-light); display: flex; justify-content: space-between; align-items: center; }
+        input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 16px; outline: none; background-color: #f8fafc; }
 
-        .stat-card { background: white; border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
-        .stat-card .val { font-size: 1.8rem; font-weight: 800; color: #0ea5e9; }
-        .stat-card .lbl { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .btn { background: var(--teacher-grad); color: white; border: none; padding: 10px 16px; border-radius: var(--radius-md); font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+        .btn-outline { background: white; color: var(--teacher-color); border: 1px solid var(--teacher-color); }
 
-        input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.9rem; outline: none; background-color: #f8fafc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 10px 6px; text-align: left; font-size: 0.8rem; border-bottom: 1px solid var(--border-color); }
+        th { background-color: #e0f2fe; color: var(--teacher-color); font-weight: 700; }
 
-        .btn { background: var(--teacher-grad); color: white; border: none; padding: 10px 18px; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-outline { background: white; color: var(--primary-color); border: 1px solid var(--primary-color); }
+        .filter-bar { background: #e0f2fe; border: 1px solid #bae6fd; padding: 12px; border-radius: var(--radius-md); margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
-        th, td { padding: 12px 14px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid var(--border-color); }
-        th { background-color: var(--primary-light); color: var(--primary-color); font-weight: 700; }
-
-        /* 기간 설정 바 */
-        .filter-bar { background: var(--primary-light); border: 1px solid #bae6fd; padding: 14px 20px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
+            display: flex; justify-content: space-around; padding: 10px 0 20px 0;
+            border-top: 1px solid var(--border-color); box-shadow: 0 -4px 12px rgba(0,0,0,0.05); z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; width: 45%; }
+        .nav-item span.icon { font-size: 1.3rem; }
+        .nav-item.active { color: var(--teacher-color); font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="brand">
-            <h2>서인천고등학교 1학년부</h2>
-            <p>Smart Study Planner</p>
-            <span class="teacher-badge">👨‍🏫 교사 대시보드</span>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item active" onclick="switchTab('dash-overview')">📈 학급 대시보드</li>
-            <li class="nav-item" onclick="switchTab('dash-students')">👨‍🎓 학생별 상세 점검</li>
-        </ul>
-        <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <button class="btn btn-outline" style="width:100%; justify-content:center;" onclick="refreshDashboard()">🔄 실시간 동기화</button>
-        </div>
+    <div class="app-header">
+        <h2>서인천고 교사 대시보드</h2>
+        <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="refreshDashboard()">🔄 동기화</button>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
 
         <!-- 1. DASHBOARD OVERVIEW -->
         <div id="dash-overview" class="tab-content active">
-            <div class="header-bar">
-                <h1><span>📈</span> 학급 스터디 플래너 수집 및 기간별 학습 현황</h1>
-                <button class="btn" onclick="refreshDashboard()">🔄 새로고침</button>
-            </div>
-
-            <!-- 기간 설정 메뉴 (1번 조건 반영) -->
             <div class="filter-bar">
-                <span style="font-weight: bold; color: var(--primary-color);">📅 조회 기간 설정:</span>
-                <input type="date" id="filter-start-date" value="2026-08-01" style="width: 150px;" onchange="refreshDashboard()">
-                <span>~</span>
-                <input type="date" id="filter-end-date" value="2026-08-31" style="width: 150px;" onchange="refreshDashboard()">
-                <button class="btn" style="padding: 6px 14px; font-size: 0.8rem;" onclick="setTodayFilter()">오늘 하루만 보기</button>
-            </div>
-
-            <!-- 기간별 순공시간 및 제출 통계 (2번 조건 반영) -->
-            <div class="grid-4" style="margin-bottom: 24px;">
-                <div class="stat-card">
-                    <span class="lbl">기간 내 총 제출 건수</span>
-                    <span class="val" id="stat-total-count">0건</span>
-                </div>
-                <div class="stat-card">
-                    <span class="lbl">기간 내 평균 학습 달성도</span>
-                    <span class="val" id="stat-avg-productivity" style="color:#10b981;">0%</span>
-                </div>
-                <div class="stat-card">
-                    <span class="lbl">제출 학생 누적 순공시간</span>
-                    <span class="val" id="stat-total-studytime" style="color:#6366f1;">0시간</span>
-                </div>
-                <div class="stat-card">
-                    <span class="lbl">실시간 통신 상태</span>
-                    <span class="val" style="color:#0ea5e9; font-size:1.2rem;">🟢 동기화 수신 대기중</span>
+                <strong>📅 조회 기간 설정</strong>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <input type="date" id="filter-start-date" value="2026-08-01" onchange="refreshDashboard()" style="font-size:0.8rem; padding:6px;">
+                    <span>~</span>
+                    <input type="date" id="filter-end-date" value="2026-08-31" onchange="refreshDashboard()" style="font-size:0.8rem; padding:6px;">
                 </div>
             </div>
 
-            <!-- Table -->
+            <div class="stat-grid">
+                <div class="stat-card"><span class="lbl">총 제출 건수</span><div class="val" id="stat-total-count">0건</div></div>
+                <div class="stat-card"><span class="lbl">평균 학습 달성도</span><div class="val" id="stat-avg-productivity" style="color:#10b981;">0%</div></div>
+                <div class="stat-card" style="grid-column: span 2;"><span class="lbl">누적 총 순공시간</span><div class="val" id="stat-total-studytime" style="color:#6366f1;">0시간</div></div>
+            </div>
+
             <div class="card">
-                <div class="card-title">
-                    기간 내 수집된 학생 학습 기록 목록
-                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal;">* 지정한 기간 내 전송된 기록이 표시됩니다.</span>
-                </div>
+                <div class="card-title">학습 수집 현황</div>
                 <table>
                     <thead>
-                        <tr>
-                            <th>작성 날짜</th>
-                            <th>학번</th>
-                            <th>이름</th>
-                            <th>순공 시간</th>
-                            <th>학습 달성도</th>
-                            <th>To-Do 개수</th>
-                            <th>전송 시각</th>
-                            <th>상세 보기</th>
-                        </tr>
+                        <tr><th>날짜</th><th>학생</th><th>순공</th><th>달성도</th><th>상세</th></tr>
                     </thead>
-                    <tbody id="teacher-student-table-body">
-                        <tr>
-                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
-                                해당 기간 내 전송된 학생 기록이 없습니다.
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="teacher-student-table-body"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 2. STUDENT DETAIL VIEW (3, 4번 조건 반영) -->
+        <!-- 2. STUDENT DETAIL VIEW -->
         <div id="dash-students" class="tab-content">
-            <div class="header-bar">
-                <h1><span>👨‍🎓</span> 학생별 기간/날짜별 상세 학습 점검</h1>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <select id="teacher-student-select" onchange="loadSelectedStudentDetail()" style="width: 180px; font-weight: bold;">
-                        <option value="">학생을 선택하세요</option>
+            <div class="card">
+                <div class="card-title">
+                    👨‍🎓 학생 상세 점검
+                    <select id="teacher-student-select" onchange="loadSelectedStudentDetail()" style="width: 140px; font-size: 0.85rem;">
+                        <option value="">학생 선택</option>
                     </select>
                 </div>
-            </div>
-
-            <!-- 상세 점검용 기간 필터 -->
-            <div class="filter-bar">
-                <span style="font-weight: bold; color: var(--primary-color);">📆 학생 상세 조회 기간:</span>
-                <input type="date" id="detail-start-date" value="2026-08-01" style="width: 150px;" onchange="loadSelectedStudentDetail()">
-                <span>~</span>
-                <input type="date" id="detail-end-date" value="2026-08-31" style="width: 150px;" onchange="loadSelectedStudentDetail()">
-            </div>
-
-            <div id="student-detail-container" style="display: none;">
-                <div class="card">
-                    <div class="card-title" id="detail-student-title">학생 정보 및 누적 학습 통계</div>
-                    <div class="grid-4" style="margin-bottom: 20px;">
-                        <div style="background:#f1f5f9; padding:12px; border-radius:8px;">
-                            <span style="font-size:0.8rem; color:var(--text-muted);">기간 내 제출 횟수</span>
-                            <h4 id="detail-sub-count" style="font-size:1.3rem; color:var(--primary-color);">0회</h4>
-                        </div>
-                        <div style="background:#f1f5f9; padding:12px; border-radius:8px;">
-                            <span style="font-size:0.8rem; color:var(--text-muted);">기간 내 총 순공 시간</span>
-                            <h4 id="detail-total-study" style="font-size:1.3rem; color:#6366f1;">0시간</h4>
-                        </div>
-                        <div style="background:#f1f5f9; padding:12px; border-radius:8px;">
-                            <span style="font-size:0.8rem; color:var(--text-muted);">기간 내 평균 달성도</span>
-                            <h4 id="detail-avg-prod" style="font-size:1.3rem; color:#10b981;">0%</h4>
-                        </div>
-                        <div style="background:#f1f5f9; padding:12px; border-radius:8px;">
-                            <span style="font-size:0.8rem; color:var(--text-muted);">이번 주 다짐</span>
-                            <h4 id="detail-motto" style="font-size:0.9rem; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</h4>
-                        </div>
+                
+                <div class="filter-bar">
+                    <strong>📆 학생 상세 조회 기간</strong>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <input type="date" id="detail-start-date" value="2026-08-01" onchange="loadSelectedStudentDetail()" style="font-size:0.8rem; padding:6px;">
+                        <span>~</span>
+                        <input type="date" id="detail-end-date" value="2026-08-31" onchange="loadSelectedStudentDetail()" style="font-size:0.8rem; padding:6px;">
                     </div>
-
-                    <!-- 일자별 학습 세부 내역 목록 -->
-                    <div class="card-title">일자별 세부 To-Do 작성 내역</div>
-                    <div id="detail-daily-history-container"></div>
                 </div>
 
-                <!-- 피드백 전송 창 (4번 조건: 학생 플래너 수신 연동) -->
-                <div class="card" style="border: 2px solid #0ea5e9;">
-                    <div class="card-title" style="color: #0ea5e9;">💌 학생 어플로 실시간 피드백 및 지도 의견 전송</div>
-                    <textarea id="teacher-feedback-input" rows="3" placeholder="선생님의 지도 의견이나 격려 문구를 입력하세요. 전송 시 학생의 '🔔 선생님 피드백' 메뉴에 빨간 알림으로 도착합니다."></textarea>
-                    <button class="btn" style="margin-top: 10px;" onclick="sendFeedbackToStudent()">📤 학생 어플로 피드백 전송</button>
+                <div id="student-detail-container" style="display: none;">
+                    <div class="stat-grid">
+                        <div class="stat-card"><span class="lbl">제출 횟수</span><div class="val" id="detail-sub-count">0회</div></div>
+                        <div class="stat-card"><span class="lbl">평균 달성도</span><div class="val" id="detail-avg-prod" style="color:#10b981;">0%</div></div>
+                    </div>
+
+                    <div style="font-size:0.85rem; margin-bottom: 12px; background:#f1f5f9; padding:10px; border-radius:8px;">
+                        <strong>🔥 이번 주 다짐:</strong> <span id="detail-motto">-</span>
+                    </div>
+
+                    <div class="card-title">일자별 세부 내역</div>
+                    <div id="detail-daily-history-container"></div>
+
+                    <div style="margin-top: 16px; border-top: 2px solid #0ea5e9; padding-top: 12px;">
+                        <strong style="color: #0ea5e9; font-size: 0.9rem;">💌 학생 어플로 피드백 전송</strong>
+                        <textarea id="teacher-feedback-input" rows="3" placeholder="선생님 피드백 입력 (학생 피드백 탭에 빨간 알림 전송)" style="margin-top:8px;"></textarea>
+                        <button class="btn" style="width: 100%; margin-top: 8px;" onclick="sendFeedbackToStudent()">피드백 전송</button>
+                    </div>
                 </div>
             </div>
         </div>
 
+    </div>
+
+    <!-- 하단 교사 전용 탭 바 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('dash-overview')">
+            <span class="icon">📈</span><span>학급 현황</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('dash-students')">
+            <span class="icon">👨‍🎓</span><span>학생 점검</span>
+        </div>
     </div>
 
     <script>
@@ -217,91 +156,69 @@
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
+            
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
+
             if(tabId === 'dash-overview') refreshDashboard();
             if(tabId === 'dash-students') updateStudentSelectOptions();
         }
 
-        function setTodayFilter() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('filter-start-date').value = today;
-            document.getElementById('filter-end-date').value = today;
-            refreshDashboard();
-        }
-
-        // 학급 전체 대시보드 기간별 집계
         function refreshDashboard() {
             const history = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
             const startDate = document.getElementById('filter-start-date').value;
             const endDate = document.getElementById('filter-end-date').value;
 
-            // 기간 내 기록 필터링
-            const filtered = history.filter(item => {
-                return item.date >= startDate && item.date <= endDate;
-            });
-
+            const filtered = history.filter(item => item.date >= startDate && item.date <= endDate);
             const tbody = document.getElementById('teacher-student-table-body');
             tbody.innerHTML = '';
 
             document.getElementById('stat-total-count').innerText = `${filtered.length}건`;
 
             if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">해당 기간 내 전송된 학생 기록이 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">기록이 없습니다.</td></tr>`;
                 document.getElementById('stat-avg-productivity').innerText = '0%';
                 document.getElementById('stat-total-studytime').innerText = '0시간';
                 return;
             }
 
-            let totalProd = 0;
-            let totalHours = 0;
+            let totalProd = 0; let totalHours = 0;
 
             filtered.sort((a, b) => b.date.localeCompare(a.date)).forEach(item => {
                 totalProd += parseInt(item.productivity) || 0;
-                
-                // 순공시간 숫자 추출
                 const match = (item.studyTime || '').match(/\d+/);
                 if(match) totalHours += parseInt(match[0]);
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${item.date}</strong></td>
-                    <td>${item.id}</td>
-                    <td>${item.name}</td>
-                    <td><span style="color:#6366f1; font-weight:bold;">${item.studyTime || '-'}</span></td>
-                    <td><span style="color:#10b981; font-weight:bold;">${item.productivity}</span></td>
-                    <td>${item.todoCount}개</td>
-                    <td style="color:var(--text-muted); font-size:0.8rem;">${item.submittedAt}</td>
-                    <td><button class="btn btn-outline" style="padding: 4px 10px; font-size:0.8rem;" onclick="viewStudentDetail('${item.id}')">상세보기</button></td>
+                    <td>${item.date.slice(5)}</td>
+                    <td><strong>${item.name}</strong><br><span style="font-size:0.7rem; color:#64748b;">${item.id}</span></td>
+                    <td>${item.studyTime || '-'}</td>
+                    <td><strong style="color:#10b981;">${item.productivity}</strong></td>
+                    <td><button class="btn btn-outline" style="padding: 2px 6px; font-size:0.7rem;" onclick="viewStudentDetail('${item.id}')">보기</button></td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            const avgProd = Math.round(totalProd / filtered.length);
-            document.getElementById('stat-avg-productivity').innerText = `${avgProd}%`;
-            document.getElementById('stat-total-studytime').innerText = `${totalHours}시간 이상`;
+            document.getElementById('stat-avg-productivity').innerText = `${Math.round(totalProd / filtered.length)}%`;
+            document.getElementById('stat-total-studytime').innerText = `${totalHours}시간`;
 
             updateStudentSelectOptions();
         }
 
-        // 학생 목록 드롭다운 업데이트
         function updateStudentSelectOptions() {
             const history = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
             const select = document.getElementById('teacher-student-select');
             const currentVal = select.value;
 
-            // 중복 학번 제거
             const studentMap = {};
-            history.forEach(item => {
-                studentMap[item.id] = item.name;
-            });
+            history.forEach(item => { studentMap[item.id] = item.name; });
 
-            select.innerHTML = '<option value="">학생을 선택하세요</option>';
+            select.innerHTML = '<option value="">학생 선택</option>';
             Object.keys(studentMap).forEach(id => {
                 const opt = document.createElement('option');
-                opt.value = id;
-                opt.innerText = `${id} ${studentMap[id]}`;
+                opt.value = id; opt.innerText = `${id} ${studentMap[id]}`;
                 select.appendChild(opt);
             });
 
@@ -314,128 +231,79 @@
             loadSelectedStudentDetail();
         }
 
-        // 학생별 기간별 상세 점검 로딩 (3번 조건 연동)
         function loadSelectedStudentDetail() {
             const studentId = document.getElementById('teacher-student-select').value;
             const container = document.getElementById('student-detail-container');
-            
-            if(!studentId) {
-                container.style.display = 'none';
-                return;
-            }
+            if(!studentId) { container.style.display = 'none'; return; }
 
             const startDate = document.getElementById('detail-start-date').value;
             const endDate = document.getElementById('detail-end-date').value;
-
             const history = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
-            
-            // 학번 및 기간 필터링
-            const myHistory = history.filter(item => {
-                return item.id === studentId && item.date >= startDate && item.date <= endDate;
-            });
+            const myHistory = history.filter(item => item.id === studentId && item.date >= startDate && item.date <= endDate);
 
             container.style.display = 'block';
 
             if(myHistory.length === 0) {
-                document.getElementById('detail-student-title').innerText = `학생 (${studentId}) - 기간 내 기록 없음`;
                 document.getElementById('detail-sub-count').innerText = '0회';
-                document.getElementById('detail-total-study').innerText = '0시간';
                 document.getElementById('detail-avg-prod').innerText = '0%';
                 document.getElementById('detail-motto').innerText = '-';
-                document.getElementById('detail-daily-history-container').innerHTML = '<p style="padding:20px; color:var(--text-muted); text-align:center;">설정한 기간 내에 제출된 학습 기록이 없습니다.</p>';
+                document.getElementById('detail-daily-history-container').innerHTML = '<p style="padding:10px; color:var(--text-muted); text-align:center;">기록이 없습니다.</p>';
                 return;
             }
 
-            const studentName = myHistory[0].name;
-            document.getElementById('detail-student-title').innerText = `${studentName} 학생 (${studentId}) 기간별 플래너 리포트`;
-            document.getElementById('detail-sub-count').innerText = `${myHistory.length}회 제출`;
-
-            let totalProd = 0;
-            let totalHours = 0;
-            let latestMotto = '-';
-
+            document.getElementById('detail-sub-count').innerText = `${myHistory.length}회`;
+            let totalProd = 0; let latestMotto = '-';
             const dailyContainer = document.getElementById('detail-daily-history-container');
             dailyContainer.innerHTML = '';
 
             myHistory.sort((a, b) => b.date.localeCompare(a.date)).forEach(record => {
                 totalProd += parseInt(record.productivity) || 0;
-                const match = (record.studyTime || '').match(/\d+/);
-                if(match) totalHours += parseInt(match[0]);
                 if(record.motto) latestMotto = record.motto;
 
-                // 일자별 To-Do 내역 카드 생성
                 const dayCard = document.createElement('div');
-                dayCard.style.cssText = "background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 15px;";
+                dayCard.style.cssText = "background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px;";
                 
                 let todosHtml = '';
                 if(record.todos && record.todos.length > 0) {
-                    record.todos.forEach(t => {
-                        todosHtml += `<li style="margin-bottom: 4px;">[${t.status}] ${t.text}</li>`;
-                    });
-                } else {
-                    todosHtml = '<li style="color: var(--text-muted);">등록된 To-Do 없음</li>';
-                }
+                    record.todos.forEach(t => { todosHtml += `<li style="font-size:0.8rem; margin-bottom:2px;">[${t.status}] ${t.text}</li>`; });
+                } else { todosHtml = '<li style="font-size:0.8rem; color: var(--text-muted);">To-Do 없음</li>'; }
 
                 dayCard.innerHTML = `
-                    <div style="display:flex; justify-size:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
-                        <strong style="color:var(--primary-color); font-size:1rem;">📅 ${record.date}</strong>
-                        <span>⏱️ 순공: <strong>${record.studyTime || '-'}</strong> | 📈 달성도: <strong style="color:#10b981;">${record.productivity}</strong></span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
+                        <strong>📅 ${record.date}</strong>
+                        <span>순공: ${record.studyTime || '-'} (${record.productivity})</span>
                     </div>
-                    <ul style="padding-left: 20px; font-size: 0.9rem;">
-                        ${todosHtml}
-                    </ul>
+                    <ul style="padding-left: 16px;">${todosHtml}</ul>
                 `;
                 dailyContainer.appendChild(dayCard);
             });
 
-            document.getElementById('detail-total-study').innerText = `${totalHours}시간 이상`;
             document.getElementById('detail-avg-prod').innerText = `${Math.round(totalProd / myHistory.length)}%`;
             document.getElementById('detail-motto').innerText = latestMotto;
         }
 
-        // 학생 어플로 실시간 피드백 전송 (4번 조건 구현)
         function sendFeedbackToStudent() {
             const studentId = document.getElementById('teacher-student-select').value;
             const content = document.getElementById('teacher-feedback-input').value.trim();
 
-            if(!studentId) {
-                alert('피드백을 전송할 학생을 선택해 주세요.');
-                return;
-            }
-            if(!content) {
-                alert('전송할 피드백 내용을 입력해 주세요.');
-                return;
-            }
+            if(!studentId || !content) { alert('학생 선택 및 피드백 내용을 입력해 주세요.'); return; }
 
             let allFeedbacks = JSON.parse(localStorage.getItem('teacher_feedbacks') || '{}');
             if(!allFeedbacks[studentId]) allFeedbacks[studentId] = [];
 
-            const newFeedback = {
-                date: new Date().toLocaleString('ko-KR'),
-                content: content,
-                read: false // 안 읽음 상태로 학생에게 전송
-            };
-
-            allFeedbacks[studentId].push(newFeedback);
+            allFeedbacks[studentId].push({ date: new Date().toLocaleString('ko-KR'), content: content, read: false });
             localStorage.setItem('teacher_feedbacks', JSON.stringify(allFeedbacks));
 
-            // 학생용 앱으로 실시간 수신 알림 방송
             plannerChannel.postMessage({ type: 'NEW_FEEDBACK', targetId: studentId });
-
             document.getElementById('teacher-feedback-input').value = '';
-            alert(`[피드백 전송 완료] 학생(${studentId})의 어플 피드백 메뉴에 빨간색 수신 알림이 표시됩니다.`);
+            alert(`[전송 완료] 학생 어플 피드백 탭에 빨간 알림이 도착합니다.`);
         }
 
-        // 실시간 수신 모니터링
         plannerChannel.onmessage = (event) => {
-            if (event.data && event.data.type === 'NEW_SUBMISSION') {
-                refreshDashboard();
-            }
+            if (event.data && event.data.type === 'NEW_SUBMISSION') refreshDashboard();
         };
 
-        window.onload = function() {
-            refreshDashboard();
-        };
+        window.onload = function() { refreshDashboard(); };
     </script>
 </body>
 </html>
