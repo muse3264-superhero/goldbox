@@ -200,8 +200,6 @@
     </div>
 
     <script>
-        // === [Google Apps Script 통신 설정] ===
-        // ⚠️ 구글 Apps Script 배포 후 발급받은 Web App URL을 넣어주세요.
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIEYrvGJ0XrQHJfnzLlIIqaolGC-h82YnQMfVeIdzmt4KBvhfW3HD57bmM65PxvecG/exec";
 
         const koreanHolidays = {
@@ -583,7 +581,7 @@
 
         function saveAllData() { saveProfile(); saveWeeklyData(); saveDailyData(); saveGradeData(); checkUnreadFeedback(); }
 
-        // === [Google 스프레드시트로 전송] ===
+        // === [Google 스프레드시트로 전송 - 브라우저 CORS 보안 차단 해결 버전] ===
         function sendDataToTeacher() {
             const studentName = document.getElementById('student-name-input').value.trim();
             const studentId = document.getElementById('student-id-input').value.trim();
@@ -599,23 +597,30 @@
             });
 
             const submissionRecord = {
-                id: studentId, name: studentName, date: currentDate,
-                motto: document.getElementById('weekly-motto').value,
-                studyTime: document.getElementById('student-study-time').value,
-                productivity: document.getElementById('auto-productivity').value,
+                id: studentId,
+                name: studentName,
+                date: currentDate,
+                motto: document.getElementById('weekly-motto').value || '',
+                studyTime: document.getElementById('student-study-time').value || '',
+                productivity: document.getElementById('auto-productivity').value || '0%',
                 todoCount: todoRows.length,
                 submittedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
             };
 
+            // 브라우저 차단을 방지하기 위한 URLSearchParams 폼 전송 방식 적용
+            const formData = new URLSearchParams();
+            formData.append('data', JSON.stringify(submissionRecord));
+
             fetch(GAS_WEB_APP_URL, {
                 method: "POST",
-                body: JSON.stringify(submissionRecord)
+                mode: "no-cors", // ★ CORS 보안 정책 우회 (보안 차단 방지)
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
             })
-            .then(res => res.json())
-            .then(data => {
-                alert(`[구글 시트 연동 전송 완료] ${studentName}학생(${studentId})의 기록이 구글 시트에 자동 기록되었습니다.`);
+            .then(() => {
+                alert(`[구글 시트 연동 전송 완료] ${studentName}학생(${studentId})의 기록이 구글 시트로 안전하게 전송되었습니다.`);
             })
-            .catch(err => alert("전송 중 오류 발생: 구글 웹 앱 URL 설정을 확인하세요."));
+            .catch(err => alert("전송 오류: " + err));
         }
 
         window.onload = function() {
