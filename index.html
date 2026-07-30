@@ -25,36 +25,22 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans KR', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* 상단 네비게이션 헤더 */
-        .app-header {
-            background: var(--card-bg);
-            padding: 14px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            z-index: 10;
-        }
+        .app-header { background: var(--card-bg); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); z-index: 10; }
         .app-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--primary-color); }
         .app-header .btn-send { background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3); }
 
-        /* 메인 콘텐츠 영역 (스크롤 영역) */
         .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* 프로필 카드 */
         .profile-card { background: var(--primary-light); border: 1px solid #c7d2fe; padding: 12px 16px; border-radius: var(--radius-lg); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .profile-card div { display: flex; align-items: center; gap: 8px; flex: 1; }
         .profile-card label { font-size: 0.85rem; font-weight: 700; color: var(--primary-color); white-space: nowrap; }
         .profile-card input { font-size: 1rem; font-weight: 700; text-align: center; padding: 6px 8px; border-radius: 8px; border: 1px solid #a5b4fc; width: 100%; background: white; }
 
-        /* 모바일 카드 스타일 */
         .card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 16px; border: 1px solid var(--border-color); margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
         .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-light); display: flex; justify-content: space-between; align-items: center; }
 
-        /* 폼 요소 */
         input[type="text"], input[type="number"], input[type="date"], input[type="month"], select, textarea {
             width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 16px; outline: none; background-color: #f8fafc;
         }
@@ -63,18 +49,15 @@
         .btn { background: var(--primary-grad); color: white; border: none; padding: 8px 14px; border-radius: var(--radius-md); cursor: pointer; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; }
         .btn-danger { background: #ef4444; }
 
-        /* Weekly Motto Banner */
         .motto-banner { background: #ffffff; border: 2px solid #a7f3d0; padding: 14px 16px; border-radius: var(--radius-lg); margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
         .motto-banner strong { font-size: 0.95rem; color: var(--text-main); }
         .motto-banner input { background: #f0fdf4; border: 1px solid #6ee7b7; border-radius: 8px; color: var(--green-text); font-weight: 800; font-size: 1.15rem; padding: 10px; }
 
-        /* 모바일 그리드 / 테이블 */
         .grid-mobile { display: flex; flex-direction: column; gap: 14px; }
         table { width: 100%; border-collapse: collapse; margin-top: 8px; }
         th, td { padding: 10px 6px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid var(--border-color); }
         th { background-color: var(--primary-light); color: var(--primary-color); font-weight: 700; }
 
-        /* 달력 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .calendar-day-header { text-align: center; font-weight: 700; font-size: 0.75rem; padding: 6px 0; color: var(--text-muted); background: #e2e8f0; border-radius: 4px; }
         .calendar-day-header.sun { color: #ef4444; }
@@ -88,14 +71,12 @@
 
         .monthly-textarea { border: none; background: transparent; resize: none; outline: none; height: 100%; font-size: 0.7rem; font-weight: 700; color: var(--green-text); line-height: 1.1; }
 
-        /* 수강 체크 박스 그리드 */
         .lecture-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
         .lecture-box { aspect-ratio: 1; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 6px; background: white; color: var(--text-muted); }
         .lecture-box.checked { background: var(--primary-grad); color: white; border-color: transparent; }
 
         .completed-badge { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; }
 
-        /* 하단 앱 고정 네비게이션 탭 바 */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
@@ -109,48 +90,27 @@
 </head>
 <body>
 
-    <!-- 상단 헤더 -->
     <div class="app-header">
         <h2>서인천고 스터디플래너</h2>
         <button class="btn-send" onclick="sendDataToTeacher()">📤 데이터 전송</button>
     </div>
 
-    <!-- 메인 컨텐츠 영역 -->
     <div class="main-content">
-
-        <!-- 학생 프로필 입력 바 -->
         <div class="profile-card">
-            <div>
-                <label>학번</label>
-                <input type="text" id="student-id-input" placeholder="10101" oninput="saveAllData()">
-            </div>
-            <div>
-                <label>이름</label>
-                <input type="text" id="student-name-input" placeholder="김서인" oninput="saveAllData()">
-            </div>
+            <div><label>학번</label><input type="text" id="student-id-input" placeholder="10101" oninput="saveAllData()"></div>
+            <div><label>이름</label><input type="text" id="student-name-input" placeholder="김서인" oninput="saveAllData()"></div>
         </div>
 
-        <!-- 1. MONTHLY PLAN -->
         <div id="monthly" class="tab-content active">
             <div class="card">
-                <div class="card-title">
-                    📅 Monthly Plan
-                    <input type="month" id="monthly-picker" value="2026-08" onchange="renderCalendar()" style="width: 130px; font-size: 0.85rem;">
-                </div>
+                <div class="card-title">📅 Monthly Plan <input type="month" id="monthly-picker" value="2026-08" onchange="renderCalendar()" style="width: 130px; font-size: 0.85rem;"></div>
                 <div class="calendar-grid">
-                    <div class="calendar-day-header sun">일</div>
-                    <div class="calendar-day-header">월</div>
-                    <div class="calendar-day-header">화</div>
-                    <div class="calendar-day-header">수</div>
-                    <div class="calendar-day-header">목</div>
-                    <div class="calendar-day-header">금</div>
-                    <div class="calendar-day-header sat">토</div>
+                    <div class="calendar-day-header sun">일</div><div class="calendar-day-header">월</div><div class="calendar-day-header">화</div><div class="calendar-day-header">수</div><div class="calendar-day-header">목</div><div class="calendar-day-header">금</div><div class="calendar-day-header sat">토</div>
                 </div>
                 <div class="calendar-grid" id="monthly-calendar-cells"></div>
             </div>
         </div>
 
-        <!-- 2. WEEKLY PLAN -->
         <div id="weekly" class="tab-content">
             <div class="card">
                 <div class="card-title">
@@ -162,10 +122,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="motto-banner">
-                    <strong>🔥 This Week's Motto:</strong> 
-                    <input type="text" id="weekly-motto" placeholder="이번 주 다짐을 입력하세요!" oninput="saveWeeklyData()">
-                </div>
+                <div class="motto-banner"><strong>🔥 This Week's Motto:</strong> <input type="text" id="weekly-motto" placeholder="이번 주 다짐을 입력하세요!" oninput="saveWeeklyData()"></div>
                 <div class="grid-mobile">
                     <div><strong style="color:var(--primary-color); font-size:0.85rem;">월요일 (MON)</strong><textarea id="weekly-mon" rows="2" placeholder="월요일 학습 목표" oninput="saveWeeklyData()"></textarea></div>
                     <div><strong style="color:var(--primary-color); font-size:0.85rem;">화요일 (TUE)</strong><textarea id="weekly-tue" rows="2" placeholder="화요일 학습 목표" oninput="saveWeeklyData()"></textarea></div>
@@ -178,13 +135,9 @@
             </div>
         </div>
 
-        <!-- 3. DAILY PLAN -->
         <div id="daily-plan" class="tab-content">
             <div class="card">
-                <div class="card-title">
-                    ✏️ Daily Plan
-                    <input type="date" id="daily-date-picker" value="2026-08-01" onchange="loadDailyData()" style="width: 140px; font-size: 0.85rem;">
-                </div>
+                <div class="card-title">✏️ Daily Plan <input type="date" id="daily-date-picker" value="2026-08-01" onchange="loadDailyData()" style="width: 140px; font-size: 0.85rem;"></div>
                 <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--primary-light); padding: 10px 14px; border-radius: var(--radius-md);">
                     <div><span style="font-size:0.8rem; color:var(--text-muted);">순공시간:</span> <input type="text" id="student-study-time" placeholder="6시간 30분" style="width: 90px; padding: 4px; font-size: 0.85rem;" oninput="saveDailyData()"></div>
                     <div><span style="font-size:0.8rem; color:var(--text-muted);">달성도:</span> <input type="text" id="auto-productivity" value="0%" readonly style="width: 50px; font-weight:800; color:var(--primary-color); border:none; background:transparent; font-size: 0.95rem;"></div>
@@ -194,36 +147,25 @@
                     <button class="btn" onclick="addTodoRow()">+ 항목 추가</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr><th style="width:30px;">선택</th><th>할 일</th><th style="width:90px;">구분</th><th style="width:40px;">삭제</th></tr>
-                    </thead>
+                    <thead><tr><th style="width:30px;">선택</th><th>할 일</th><th style="width:90px;">구분</th><th style="width:40px;">삭제</th></tr></thead>
                     <tbody id="todo-list-body"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 4. CLASS CHECKLIST -->
         <div id="class-checklist" class="tab-content">
             <div class="card">
-                <div class="card-title">
-                    📚 Class Checklist
-                    <button class="btn" onclick="addClassCard()">+ 강의 추가</button>
-                </div>
+                <div class="card-title">📚 Class Checklist <button class="btn" onclick="addClassCard()">+ 강의 추가</button></div>
                 <h4 style="font-size: 0.95rem; color: var(--primary-color); margin-bottom: 8px;">📖 수강 중인 강의</h4>
                 <div id="active-class-cards-container"></div>
-
                 <h4 style="font-size: 0.95rem; color: #15803d; margin: 16px 0 8px 0;">🏆 완강한 강의</h4>
                 <div id="completed-class-cards-container"></div>
             </div>
         </div>
 
-        <!-- 5. GRADE RECORD (요청 사항 반영: 과목명 크기 축소, 난이도/목표점수/실제점수/삭제 크기 확대) -->
         <div id="grade-record" class="tab-content">
             <div class="card">
-                <div class="card-title">
-                    📊 Grade Record
-                    <button class="btn" onclick="addGradeRow()">+ 과목 추가</button>
-                </div>
+                <div class="card-title">📊 Grade Record <button class="btn" onclick="addGradeRow()">+ 과목 추가</button></div>
                 <table>
                     <thead>
                         <tr>
@@ -236,52 +178,31 @@
                     </thead>
                     <tbody id="grade-table-body"></tbody>
                 </table>
-                <div style="margin-top: 16px;">
-                    <canvas id="gradeChartCanvas" width="320" height="200"></canvas>
-                </div>
+                <div style="margin-top: 16px;"><canvas id="gradeChartCanvas" width="320" height="200"></canvas></div>
             </div>
         </div>
 
-        <!-- 6. TEACHER FEEDBACK -->
         <div id="teacher-feedback" class="tab-content">
             <div class="card">
-                <div class="card-title">
-                    🔔 선생님 피드백
-                    <button class="btn" onclick="loadFeedbackList()">🔄 새로고침</button>
-                </div>
-                <div id="feedback-list-container">
-                    <p style="color: var(--text-muted); text-align: center; padding: 20px;">도착한 피드백이 없습니다.</p>
-                </div>
+                <div class="card-title">🔔 선생님 피드백 <button class="btn" onclick="loadFeedbackList()">🔄 새로고침</button></div>
+                <div id="feedback-list-container"><p style="color: var(--text-muted); text-align: center; padding: 20px;">도착한 피드백이 없습니다.</p></div>
             </div>
         </div>
-
     </div>
 
-    <!-- 하단 앱 고정 네비게이션 탭 바 -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('monthly')">
-            <span class="icon">📅</span><span>월간</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('weekly')">
-            <span class="icon">🗓️</span><span>주간</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('daily-plan')">
-            <span class="icon">✏️</span><span>일간</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('class-checklist')">
-            <span class="icon">📚</span><span>진도</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('grade-record')">
-            <span class="icon">📊</span><span>성적</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('teacher-feedback')">
-            <span class="icon">🔔</span><span>피드백</span>
-            <span class="badge" id="feedback-count-badge">0</span>
-        </div>
+        <div class="nav-item active" onclick="switchTab('monthly')"><span class="icon">📅</span><span>월간</span></div>
+        <div class="nav-item" onclick="switchTab('weekly')"><span class="icon">🗓️</span><span>주간</span></div>
+        <div class="nav-item" onclick="switchTab('daily-plan')"><span class="icon">✏️</span><span>일간</span></div>
+        <div class="nav-item" onclick="switchTab('class-checklist')"><span class="icon">📚</span><span>진도</span></div>
+        <div class="nav-item" onclick="switchTab('grade-record')"><span class="icon">📊</span><span>성적</span></div>
+        <div class="nav-item" onclick="switchTab('teacher-feedback')"><span class="icon">🔔</span><span>피드백</span><span class="badge" id="feedback-count-badge">0</span></div>
     </div>
 
     <script>
-        const plannerChannel = new BroadcastChannel('seoincheon_planner_channel');
+        // === [Google Apps Script 통신 설정] ===
+        // ⚠️ 구글 Apps Script 배포 후 발급받은 Web App URL을 넣어주세요.
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1eKRk58bZVf_QnTYf-AY3hgDpsjBUJZEnYFtK_lQYNxCzgfzHGokpJ9zOTnV6Ce0/exec";
 
         const koreanHolidays = {
             "01-01": "신정", "03-01": "삼일절", "05-05": "어린이날", "06-06": "현충일",
@@ -294,7 +215,6 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
 
@@ -302,10 +222,7 @@
             if(tabId === 'weekly') loadWeeklyData();
             if(tabId === 'daily-plan') loadDailyData();
             if(tabId === 'grade-record') renderGradeChart();
-            if(tabId === 'teacher-feedback') {
-                loadFeedbackList();
-                markFeedbackAsRead();
-            }
+            if(tabId === 'teacher-feedback') { loadFeedbackList(); markFeedbackAsRead(); }
         }
 
         function saveProfile() {
@@ -330,29 +247,25 @@
             const [year, month] = pickerVal.split('-').map(Number);
             const container = document.getElementById('monthly-calendar-cells');
             container.innerHTML = '';
-
             const monthlyData = JSON.parse(localStorage.getItem('monthly_data') || '{}');
             const firstDay = new Date(year, month - 1, 1).getDay();
             const lastDate = new Date(year, month, 0).getDate();
 
             for (let i = 0; i < firstDay; i++) {
                 const emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-cell';
-                emptyCell.style.opacity = '0.2';
+                emptyCell.className = 'calendar-cell'; emptyCell.style.opacity = '0.2';
                 container.appendChild(emptyCell);
             }
 
             for (let day = 1; day <= lastDate; day++) {
                 const cell = document.createElement('div');
                 const dayOfWeek = (firstDay + day - 1) % 7;
-                
                 const monthStr = month < 10 ? '0' + month : month;
                 const dayStr = day < 10 ? '0' + day : day;
                 const dateKey = `${year}-${monthStr}-${dayStr}`;
                 const shortKey = `${monthStr}-${dayStr}`;
 
                 let holidayName = koreanHolidays[dateKey] || koreanHolidays[shortKey] || "";
-                
                 let cellClass = 'calendar-cell';
                 if (dayOfWeek === 0) cellClass += ' sun';
                 if (dayOfWeek === 6) cellClass += ' sat';
@@ -416,7 +329,6 @@
                 const sel = tr.querySelector('select').value;
                 todos.push({ checked: chk, text: txt, status: sel });
             });
-
             const data = { studyTime: document.getElementById('student-study-time').value, todos: todos };
             localStorage.setItem(key, JSON.stringify(data));
             calculateProductivity();
@@ -426,10 +338,8 @@
             const key = getDailyKey();
             const data = JSON.parse(localStorage.getItem(key) || '{}');
             document.getElementById('student-study-time').value = data.studyTime || '';
-            
             const tbody = document.getElementById('todo-list-body');
             tbody.innerHTML = '';
-            
             if(data.todos && data.todos.length > 0) {
                 data.todos.forEach(item => addTodoRow(item.checked, item.text, item.status));
             }
@@ -562,7 +472,6 @@
             targetContainer.appendChild(newCard);
         }
 
-        // --- Grade Record (요청사항 반영: 과목명 30%, 난이도 18%, 목표점수 22%, 실제점수 22%, 삭제 8%) ---
         function saveGradeData() {
             const rows = [];
             document.querySelectorAll('#grade-table-body tr').forEach(tr => {
@@ -674,6 +583,7 @@
 
         function saveAllData() { saveProfile(); saveWeeklyData(); saveDailyData(); saveGradeData(); checkUnreadFeedback(); }
 
+        // === [Google 스프레드시트로 전송] ===
         function sendDataToTeacher() {
             const studentName = document.getElementById('student-name-input').value.trim();
             const studentId = document.getElementById('student-id-input').value.trim();
@@ -693,24 +603,20 @@
                 motto: document.getElementById('weekly-motto').value,
                 studyTime: document.getElementById('student-study-time').value,
                 productivity: document.getElementById('auto-productivity').value,
-                todoCount: todoRows.length, todos: todoRows,
+                todoCount: todoRows.length,
                 submittedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
             };
 
-            let submissionsList = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
-            submissionsList = submissionsList.filter(s => !(s.id === studentId && s.date === currentDate));
-            submissionsList.push(submissionRecord);
-            localStorage.setItem('planner_submissions_history', JSON.stringify(submissionsList));
-            plannerChannel.postMessage({ type: 'NEW_SUBMISSION', data: submissionRecord });
-            alert(`[전송 완료] ${studentName}학생(${studentId})의 데이터가 교사 대시보드로 수신되었습니다.`);
+            fetch(GAS_WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(submissionRecord)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(`[구글 시트 연동 전송 완료] ${studentName}학생(${studentId})의 기록이 구글 시트에 자동 기록되었습니다.`);
+            })
+            .catch(err => alert("전송 중 오류 발생: 구글 웹 앱 URL 설정을 확인하세요."));
         }
-
-        plannerChannel.onmessage = (event) => {
-            if (event.data && event.data.type === 'NEW_FEEDBACK') {
-                const studentId = document.getElementById('student-id-input').value.trim();
-                if(event.data.targetId === studentId) checkUnreadFeedback();
-            }
-        };
 
         window.onload = function() {
             loadProfile(); renderCalendar(); loadWeeklyData(); loadDailyData(); loadClassData(); loadGradeData(); checkUnreadFeedback();
