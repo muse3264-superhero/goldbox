@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>서인천고등학교 1학년부 - 학생용 스터디 플래너</title>
+    <title>서인천고등학교 - 학생용 스터디 플래너</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -105,7 +105,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="brand">
-            <h2>서인천고등학교 1학년부</h2>
+            <h2>서인천고등학교</h2>
             <p>Smart Study Planner</p>
             <span class="student-badge">👨‍🎓 학생용 어플</span>
         </div>
@@ -298,7 +298,7 @@
             </div>
         </div>
 
-        <!-- 6. TEACHER FEEDBACK (신규 수신 메뉴) -->
+        <!-- 6. TEACHER FEEDBACK -->
         <div id="teacher-feedback" class="tab-content">
             <div class="header-bar">
                 <h1><span>🔔</span> 선생님 지도 의견 및 피드백</h1>
@@ -337,7 +337,7 @@
             if(tabId === 'grade-record') renderGradeChart();
             if(tabId === 'teacher-feedback') {
                 loadFeedbackList();
-                markFeedbackAsRead(); // 읽음 처리 및 빨간 알림 뱃지 제거
+                markFeedbackAsRead();
             }
         }
 
@@ -769,7 +769,7 @@
             });
         }
 
-        // --- Teacher Feedback 수신 및 알림 뱃지 관리 ---
+        // --- Teacher Feedback ---
         function checkUnreadFeedback() {
             const studentId = document.getElementById('student-id-input').value.trim();
             if(!studentId) return;
@@ -806,7 +806,7 @@
                 return;
             }
 
-            myFeedbacks.reverse().forEach(f => {
+            myFeedbacks.slice().reverse().forEach(f => {
                 const box = document.createElement('div');
                 box.style.cssText = "background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 16px; margin-bottom: 12px;";
                 box.innerHTML = `
@@ -873,9 +873,7 @@
                 submittedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
             };
 
-            // 일자별/기간별 추적을 위한 데이터 저장 구조
             let submissionsList = JSON.parse(localStorage.getItem('planner_submissions_history') || '[]');
-            // 같은 날짜 동일 학번 데이터는 최신본으로 갱신
             submissionsList = submissionsList.filter(s => !(s.id === studentId && s.date === currentDate));
             submissionsList.push(submissionRecord);
             localStorage.setItem('planner_submissions_history', JSON.stringify(submissionsList));
@@ -885,7 +883,6 @@
             alert(`[전송 및 저장 완료] ${studentName}학생(${studentId})의 ${currentDate} 플래너 데이터가 성공적으로 교사 대시보드로 전달되었습니다!`);
         }
 
-        // 실시간 피드백 도착 감지
         plannerChannel.onmessage = (event) => {
             if (event.data && event.data.type === 'NEW_FEEDBACK') {
                 const studentId = document.getElementById('student-id-input').value.trim();
