@@ -182,10 +182,18 @@
             </div>
         </div>
 
+        <!-- 피드백 탭 -->
         <div id="teacher-feedback" class="tab-content">
             <div class="card">
-                <div class="card-title">🔔 선생님 피드백 <button class="btn" onclick="loadFeedbackList()">🔄 새로고침</button></div>
-                <div id="feedback-list-container"><p style="color: var(--text-muted); text-align: center; padding: 20px;">도착한 피드백이 없습니다.</p></div>
+                <div class="card-title">🔔 선생님 피드백 & 답장 <button class="btn" onclick="fetchFeedbacksFromServer()">🔄 새로고침</button></div>
+                <div id="feedback-list-container"><p style="color: var(--text-muted); text-align: center; padding: 20px;">불러오는 중...</p></div>
+                
+                <!-- 학생 답장 작성 폼 -->
+                <div style="margin-top: 16px; background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-md);">
+                    <strong style="font-size: 0.85rem; color: var(--primary-color);">💬 선생님께 답장 남기기</strong>
+                    <textarea id="student-reply-input" rows="2" placeholder="선생님께 보낼 메시지를 입력하세요..." style="margin-top: 6px; font-size: 0.85rem;"></textarea>
+                    <button class="btn" style="margin-top: 8px; width: 100%; justify-content: center;" onclick="sendReplyToTeacher()">✉️ 답장 전송하기</button>
+                </div>
             </div>
         </div>
     </div>
@@ -200,7 +208,7 @@
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoovDGzljWrK2AM5PUsHIepRH-U7q5CxUlWH_nm-nUVDHZ-BJ0nGXBtTHgdkQ7zyBi/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyLia6Of70lAZI_UNIqpQ1W70Fqws4EpjqSbkMST4tmZjgt9pfXHg7dOOBHtGJoQc7b/exec";
 
         const koreanHolidays = {
             "01-01": "신정", "03-01": "삼일절", "05-05": "어린이날", "06-06": "현충일",
@@ -220,7 +228,7 @@
             if(tabId === 'weekly') loadWeeklyData();
             if(tabId === 'daily-plan') loadDailyData();
             if(tabId === 'grade-record') renderGradeChart();
-            if(tabId === 'teacher-feedback') { loadFeedbackList(); markFeedbackAsRead(); }
+            if(tabId === 'teacher-feedback') { fetchFeedbacksFromServer(); markFeedbackAsRead(); }
         }
 
         function saveProfile() {
@@ -540,48 +548,112 @@
             });
         }
 
-        function checkUnreadFeedback() {
-            const studentId = document.getElementById('student-id-input').value.trim();
-            if(!studentId) return;
-            const allFeedbacks = JSON.parse(localStorage.getItem('teacher_feedbacks') || '{}');
-            const myFeedbacks = allFeedbacks[studentId] || [];
-            const unreadCount = myFeedbacks.filter(f => !f.read).length;
-            const badge = document.getElementById('feedback-count-badge');
-            if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'inline-block'; }
-            else { badge.style.display = 'none'; }
-        }
+        // === [실시간 서버 피드백 연동] ===
+        let fetchedFeedbacks = [];
 
-        function loadFeedbackList() {
+        function fetchFeedbacksFromServer() {
             const studentId = document.getElementById('student-id-input').value.trim();
             const container = document.getElementById('feedback-list-container');
-            container.innerHTML = '';
-            if(!studentId) { container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">학번을 입력해 주세요.</p>`; return; }
-            const allFeedbacks = JSON.parse(localStorage.getItem('teacher_feedbacks') || '{}');
-            const myFeedbacks = allFeedbacks[studentId] || [];
-            if(myFeedbacks.length === 0) { container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">도착한 피드백이 없습니다.</p>`; return; }
+            if(!studentId) { container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">학번을 먼저 입력해 주세요.</p>`; return; }
 
-            myFeedbacks.slice().reverse().forEach(f => {
+            fetch(GAS_WEB_APP_URL, { redirect: 'follow' })
+            .then(res => res.json())
+            .then(data => {
+                const allFb = data.feedbacks || [];
+                fetchedFeedbacks = allFb.filter(f => String(f.studentId) === String(studentId));
+                renderFeedbackList();
+                checkUnreadFeedback();
+            })
+            .catch(err => {
+                container.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 20px;">피드백을 불러오지 못했습니다.</p>`;
+            });
+        }
+
+        function renderFeedbackList() {
+            const container = document.getElementById('feedback-list-container');
+            container.innerHTML = '';
+
+            if(fetchedFeedbacks.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">선생님과 주고받은 피드백이 없습니다.</p>`;
+                return;
+            }
+
+            fetchedFeedbacks.forEach(f => {
+                const isTeacher = f.sender === "교사" || f.type === "feedback";
                 const box = document.createElement('div');
-                box.style.cssText = "background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 12px; margin-bottom: 10px;";
-                box.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom: 6px;"><strong style="color: #15803d; font-size:0.85rem;">👨‍🏫 선생님 피드백</strong><span style="font-size: 0.75rem; color: #64748b;">${f.date}</span></div><p style="font-size: 0.9rem; color: #1e293b; line-height: 1.4;">${f.content}</p>`;
+                box.style.cssText = isTeacher 
+                    ? "background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 12px; margin-bottom: 10px;"
+                    : "background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 12px; margin-bottom: 10px; text-align: right;";
+
+                const titleHtml = isTeacher 
+                    ? `<strong style="color: #15803d; font-size:0.85rem;">👨‍🏫 선생님 피드백</strong>`
+                    : `<strong style="color: #4f46e5; font-size:0.85rem;">🙋‍♂️ 내가 보낸 답장</strong>`;
+
+                box.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                        ${titleHtml}
+                        <span style="font-size: 0.75rem; color: #64748b;">${f.createdAt}</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #1e293b; line-height: 1.4; text-align: left;">${f.content}</p>
+                `;
                 container.appendChild(box);
             });
         }
 
-        function markFeedbackAsRead() {
+        function checkUnreadFeedback() {
             const studentId = document.getElementById('student-id-input').value.trim();
             if(!studentId) return;
-            let allFeedbacks = JSON.parse(localStorage.getItem('teacher_feedbacks') || '{}');
-            if(allFeedbacks[studentId]) {
-                allFeedbacks[studentId].forEach(f => f.read = true);
-                localStorage.setItem('teacher_feedbacks', JSON.stringify(allFeedbacks));
-            }
+
+            const readIds = JSON.parse(localStorage.getItem('read_fb_ids') || '[]');
+            const unreadCount = fetchedFeedbacks.filter(f => (f.sender === "교사" || f.type === "feedback") && !readIds.includes(f.fbId)).length;
+            const badge = document.getElementById('feedback-count-badge');
+            
+            if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'inline-block'; }
+            else { badge.style.display = 'none'; }
+        }
+
+        function markFeedbackAsRead() {
+            const readIds = fetchedFeedbacks.map(f => f.fbId);
+            localStorage.setItem('read_fb_ids', JSON.stringify(readIds));
             checkUnreadFeedback();
         }
 
-        function saveAllData() { saveProfile(); saveWeeklyData(); saveDailyData(); saveGradeData(); checkUnreadFeedback(); }
+        function sendReplyToTeacher() {
+            const studentId = document.getElementById('student-id-input').value.trim();
+            const studentName = document.getElementById('student-name-input').value.trim();
+            const replyText = document.getElementById('student-reply-input').value.trim();
 
-        // === [Google 스프레드시트로 전송 - 브라우저 CORS 보안 차단 해결 버전] ===
+            if(!studentId || !studentName) { alert('학번과 이름을 입력해 주세요.'); return; }
+            if(!replyText) { alert('선생님께 보낼 답장 내용을 입력하세요.'); return; }
+
+            const replyData = {
+                type: "reply",
+                studentId: studentId,
+                sender: studentName,
+                content: replyText,
+                createdAt: new Date().toLocaleString("ko-KR")
+            };
+
+            const formData = new URLSearchParams();
+            formData.append('data', JSON.stringify(replyData));
+
+            fetch(GAS_WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
+            })
+            .then(() => {
+                alert('선생님께 답장이 성공적으로 전송되었습니다.');
+                document.getElementById('student-reply-input').value = '';
+                fetchFeedbacksFromServer();
+            })
+            .catch(err => alert('전송 중 오류 발생: ' + err));
+        }
+
+        function saveAllData() { saveProfile(); saveWeeklyData(); saveDailyData(); saveGradeData(); }
+
+        // === [Google 스프레드시트로 전송] ===
         function sendDataToTeacher() {
             const studentName = document.getElementById('student-name-input').value.trim();
             const studentId = document.getElementById('student-id-input').value.trim();
@@ -593,7 +665,10 @@
             document.querySelectorAll('#todo-list-body tr').forEach(tr => {
                 const inputs = tr.querySelectorAll('input[type="text"]');
                 const select = tr.querySelector('select');
-                if(inputs.length > 0 && inputs[0].value.trim() !== "") todoRows.push({ text: inputs[0].value, status: select.value });
+                const chk = tr.querySelector('input[type="checkbox"]').checked;
+                if(inputs.length > 0 && inputs[0].value.trim() !== "") {
+                    todoRows.push({ text: inputs[0].value, status: select.value, checked: chk });
+                }
             });
 
             const submissionRecord = {
@@ -604,16 +679,16 @@
                 studyTime: document.getElementById('student-study-time').value || '',
                 productivity: document.getElementById('auto-productivity').value || '0%',
                 todoCount: todoRows.length,
+                todos: todoRows, // To-Do 상세 데이터 전송
                 submittedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
             };
 
-            // 브라우저 차단을 방지하기 위한 URLSearchParams 폼 전송 방식 적용
             const formData = new URLSearchParams();
             formData.append('data', JSON.stringify(submissionRecord));
 
             fetch(GAS_WEB_APP_URL, {
                 method: "POST",
-                mode: "no-cors", // ★ CORS 보안 정책 우회 (보안 차단 방지)
+                mode: "no-cors",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData.toString()
             })
@@ -624,7 +699,7 @@
         }
 
         window.onload = function() {
-            loadProfile(); renderCalendar(); loadWeeklyData(); loadDailyData(); loadClassData(); loadGradeData(); checkUnreadFeedback();
+            loadProfile(); renderCalendar(); loadWeeklyData(); loadDailyData(); loadClassData(); loadGradeData(); fetchFeedbacksFromServer();
         };
     </script>
 </body>
