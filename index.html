@@ -93,13 +93,14 @@
             font-size: 0.7rem; font-weight: 900; border: 2px solid #ffffff; display: none;
         }
 
-        /* AI 리포트 전용 스타일 */
         .ai-card { background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); color: white; padding: 16px; border-radius: var(--radius-lg); margin-bottom: 16px; }
         .report-section { background: #ffffff; border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); color: var(--text-main); }
         .report-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 
-        /* 열정왕 보상 카드 레어 이펙트 */
         .passion-king-card { background: linear-gradient(135deg, #fef08a 0%, #facc15 100%); border: 2px solid #ca8a04; border-radius: var(--radius-lg); padding: 16px; text-align: center; color: #713f12; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4); }
+
+        /* 날짜 입력 강조 스타일 (입력된 날짜 강조) */
+        .date-input-has-data { color: #ef4444 !important; font-weight: 900 !important; border-color: #ef4444 !important; background-color: #fef2f2 !important; }
     </style>
 </head>
 <body>
@@ -151,7 +152,13 @@
 
         <div id="daily-plan" class="tab-content">
             <div class="card">
-                <div class="card-title">✏️ Daily Plan <input type="date" id="daily-date-picker" value="2026-08-01" onchange="loadDailyData()" style="width: 140px; font-size: 0.85rem;"></div>
+                <div class="card-title">
+                    ✏️ Daily Plan 
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span id="daily-data-status-badge" style="font-size:0.75rem; color:#ef4444; font-weight:800; display:none;">🔴 입력됨</span>
+                        <input type="date" id="daily-date-picker" value="2026-08-01" onchange="loadDailyData()" style="width: 145px; font-size: 0.85rem;">
+                    </div>
+                </div>
                 <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--primary-light); padding: 10px 14px; border-radius: var(--radius-md);">
                     <div><span style="font-size:0.8rem; color:var(--text-muted);">순공시간:</span> <input type="text" id="student-study-time" placeholder="6시간 30분" style="width: 90px; padding: 4px; font-size: 0.85rem;" oninput="saveDailyData()"></div>
                     <div><span style="font-size:0.8rem; color:var(--text-muted);">달성도:</span> <input type="text" id="auto-productivity" value="0%" readonly style="width: 50px; font-weight:800; color:var(--primary-color); border:none; background:transparent; font-size: 0.95rem;"></div>
@@ -196,33 +203,40 @@
             </div>
         </div>
 
-        <!-- AI 학습 분석 & 열정왕 보상 탭 -->
+        <!-- AI 학습 분석 탭 (주차 선택 & 종합 데이터 포함) -->
         <div id="student-ai-tab" class="tab-content">
-            <!-- 열정왕 보상 카드 영역 (شر 조건 달성 시 출력) -->
             <div id="passion-king-reward-area"></div>
 
             <div class="ai-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size: 1.1rem; font-weight: 800;">🤖 Gemini AI 학습 코칭 리포트</div>
-                    <button class="btn" style="background:#ffffff; color:#4338ca; font-size:0.75rem; padding:4px 8px;" onclick="generateAiAnalysis()">🔄 리포트 생성</button>
+                    <div style="font-size: 1.1rem; font-weight: 800;">🤖 Gemini AI 종합 코칭</div>
+                    <button class="btn" style="background:#ffffff; color:#4338ca; font-size:0.75rem; padding:4px 8px;" onclick="generateAiAnalysis()">🔄 리포트 분석</button>
                 </div>
-                <p style="font-size: 0.78rem; opacity: 0.85; margin-top: 4px;">나의 순공시간과 학습 달성도를 종합 분석하여 맞춤 강점/단점 및 로드맵을 제공합니다.</p>
+                
+                <!-- 주단위 분석 토글 셀렉터 -->
+                <div style="margin-top:10px; display:flex; gap:6px; align-items:center; background:rgba(255,255,255,0.15); padding:6px 10px; border-radius:8px;">
+                    <span style="font-size:0.8rem; font-weight:bold;">📅 분석 주차:</span>
+                    <input type="month" id="ai-picker-month" value="2026-08" onchange="generateAiAnalysis()" style="width:115px; font-size:0.78rem; padding:2px 4px; color:#0f172a; background:white;">
+                    <select id="ai-picker-week" onchange="generateAiAnalysis()" style="width:75px; font-size:0.78rem; padding:2px 4px; color:#0f172a; background:white;">
+                        <option value="1">1주차</option><option value="2">2주차</option><option value="3" selected>3주차</option><option value="4">4주차</option><option value="5">5주차</option>
+                    </select>
+                </div>
             </div>
 
             <div id="ai-report-container">
                 <div class="report-section">
-                    <div class="report-title" style="color: #2563eb;">🎯 나의 학습 강점 (Strengths)</div>
-                    <div id="ai-str-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">플래너 데이터를 바탕으로 분석 중입니다...</div>
+                    <div class="report-title" style="color: #2563eb;">🎯 나의 주간 학습 강점 & 성과</div>
+                    <div id="ai-str-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">주차별 일간 계획, 진도, 성적 데이터를 바탕으로 종합 분석 중입니다...</div>
                 </div>
 
                 <div class="report-section">
-                    <div class="report-title" style="color: #dc2626;">⚠️ 보완점 & 취약 요소 (Weaknesses)</div>
-                    <div id="ai-weak-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">플래너 데이터를 바탕으로 분석 중입니다...</div>
+                    <div class="report-title" style="color: #dc2626;">⚠️ 보완점 및 취약 요소 (진도/성적 연동)</div>
+                    <div id="ai-weak-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">분석 중...</div>
                 </div>
 
                 <div class="report-section">
-                    <div class="report-title" style="color: #16a34a;">🚀 앞으로의 맞춤 학습 가이드라인</div>
-                    <div id="ai-guide-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">플래너 데이터를 바탕으로 분석 중입니다...</div>
+                    <div class="report-title" style="color: #16a34a;">🚀 앞으로의 맞춤 학습 방향 및 솔루션</div>
+                    <div id="ai-guide-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">분석 중...</div>
                 </div>
             </div>
         </div>
@@ -389,8 +403,10 @@
             const data = { studyTime: document.getElementById('student-study-time').value, todos: todos };
             localStorage.setItem(key, JSON.stringify(data));
             calculateProductivity();
+            checkDailyInputStatus();
         }
 
+        // 일간 날짜 선택 시 입력 데이터 유무 판별 및 피드백 시각화
         function loadDailyData() {
             const key = getDailyKey();
             const data = JSON.parse(localStorage.getItem(key) || '{}');
@@ -401,6 +417,25 @@
                 data.todos.forEach(item => addTodoRow(item.checked, item.text, item.status));
             }
             calculateProductivity();
+            checkDailyInputStatus();
+        }
+
+        function checkDailyInputStatus() {
+            const datePicker = document.getElementById('daily-date-picker');
+            const statusBadge = document.getElementById('daily-data-status-badge');
+            const key = getDailyKey();
+            const data = JSON.parse(localStorage.getItem(key) || '{}');
+
+            const hasStudyTime = data.studyTime && data.studyTime.trim() !== "";
+            const hasTodos = data.todos && data.todos.length > 0 && data.todos.some(t => t.text.trim() !== "");
+
+            if(hasStudyTime || hasTodos) {
+                datePicker.classList.add('date-input-has-data');
+                statusBadge.style.display = 'inline-block';
+            } else {
+                datePicker.classList.remove('date-input-has-data');
+                statusBadge.style.display = 'none';
+            }
         }
 
         function addTodoRow(checked = false, text = '', status = '완료') {
@@ -599,38 +634,57 @@
             });
         }
 
-        // === [AI 분석 리포트 & 열정왕 보상 로직] ===
+        // === [주단위 AI 종합 코칭 리포트 (일간+진도+성적 연동)] ===
         function generateAiAnalysis() {
             const studentId = document.getElementById('student-id-input').value.trim();
-            const studentName = document.getElementById('student-name-input').value.trim();
+            const selectedMonth = document.getElementById('ai-picker-month').value;
+            const selectedWeek = document.getElementById('ai-picker-week').value;
+
+            // 로컬 데이터 수집 (진도 & 성적)
+            const classCards = JSON.parse(localStorage.getItem('class_checklist_data_v5') || '[]');
+            const gradeRows = JSON.parse(localStorage.getItem('grade_data_v2') || '[]');
+
+            let totalLectureGoals = 0; let totalLectureChecked = 0;
+            classCards.forEach(c => {
+                const goal = parseGoalCount(c.goal);
+                totalLectureGoals += goal;
+                if(c.checkedIndexes) totalLectureChecked += c.checkedIndexes.filter(i => i <= goal).length;
+            });
+            const classRate = totalLectureGoals > 0 ? Math.round((totalLectureChecked / totalLectureGoals) * 100) : 0;
+
+            let avgActualScore = 0;
+            if(gradeRows.length > 0) {
+                const sum = gradeRows.reduce((acc, r) => acc + (parseInt(r.actualScore) || 0), 0);
+                avgActualScore = Math.round(sum / gradeRows.length);
+            }
+
+            // 현재 일간 및 주간 데이터 수집
             const studyTimeStr = document.getElementById('student-study-time').value || "0시간";
             const prodStr = document.getElementById('auto-productivity').value || "0%";
-
             const studyHours = parseInt((studyTimeStr.match(/\d+/) || [0])[0]);
-            const prodVal = parseInt((prodStr.match(/\d+/) || [0])[0]);
 
-            // 강점 / 단점 / 리포트 동적 생성
-            let strText = ""; let weakText = ""; let guideText = "";
+            let strText = `📌 <strong>[${selectedMonth} ${selectedWeek}주차 종합 피드백]</strong><br>`;
+            let weakText = ""; let guideText = "";
 
-            if(studyHours >= 4 && prodVal >= 80) {
-                strText = `🔥 <strong>최상위 몰입 능력!</strong> 순공시간(${studyTimeStr})과 높은 목표 달성도(${prodStr})를 모두 유지하고 있습니다. 지속적인 순공 리듬이 잘 잡혀 있습니다.`;
-                weakText = `⚡ 고강도 학습 후 피로 누적에 주의하세요. 주말 피드백 타임을 활용해 규칙적인 휴식 시간을 배정해 보세요.`;
-                guideText = `🚀 현 기세를 유지하면서 과목별 난이도를 '상' 수준으로 끌어올리고 모의고사 실전 문제 풀이 비중을 확대하세요!`;
-            } else if(studyHours >= 2) {
-                strText = `👍 <strong>꾸준한 학습 습관 보유!</strong> 매일 성실하게 플래너를 기록하고 계획을 이행하려는 의지가 돋보입니다.`;
-                weakText = `🎯 To-Do 목록 중 '분할'되거나 '연기'되는 항목의 원인을 분석해 보세요. 초기 목표 설정 시 학습량을 과도하게 잡았을 수 있습니다.`;
-                guideText = `🚀 주요 과목(국·영·수) 순공시간 비중을 +1시간 확대하고, 하루 단위 피드백을 강화하여 '완료' 비율을 85% 이상으로 높여봅시다.`;
+            strText += `• <strong>학습 성과:</strong> 일간 순공시간 (${studyTimeStr}), 달성도 (${prodStr})<br>`;
+            if(totalLectureGoals > 0) strText += `• <strong>강의 진도율:</strong> 전체 ${totalLectureGoals}강 중 ${totalLectureChecked}강 완료 (${classRate}%)<br>`;
+            if(gradeRows.length > 0) strText += `• <strong>성적 현황:</strong> 평균 등록 점수 ${avgActualScore}점<br>`;
+
+            if(studyHours >= 4 && classRate >= 60) {
+                strText += `<br>🔥 <strong>최상위 몰입 유지 중!</strong> 주간 순공시간과 인강 진도 집행력이 매우 우수합니다.`;
+                weakText = `⚡ 인강 완강율은 높으나 성적 연결을 위해 오답 노트 정리 및 약점 단원 반복 회독 시간을 별도로 배치하세요.`;
+                guideText = `🚀 선택한 주차의 고강도 학습 흐름을 계속 유지하고, 주말에는 한 주 동안 풀었던 오답 문제 재점검에 집중하세요!`;
             } else {
-                strText = `🌱 <strong>성장 잠재력 발휘 준비!</strong> 플래너 작성을 시작한 것 자체가 자기주도 학습의 훌륭한 첫걸음입니다.`;
-                weakText = `⏰ 순공시간 절대량 확보가 시급합니다. 스마트폰 사용 시간 및 불필요한 자투리 시간을 정돈할 필요가 있습니다.`;
-                guideText = `🚀 처음부터 무리하게 시간을 늘리지 말고 '하루 2시간 순공'과 'To-Do 3개 완수'를 1차 목표로 설정해 보세요!`;
+                strText += `<br>🌱 <strong>꾸준한 진도 축적 진행 중!</strong> 지정한 주차에 계획을 등록하고 학습을 시작한 점이 긍정적입니다.`;
+                weakText = `⚠️ 수강 중인 강의 진도율(${classRate}%) 및 Daily Plan '완료' 비율 확수가 필요합니다. 과목별 우선순위를 재설정해 보세요.`;
+                guideText = `🚀 다음 주차에는 매일 필수 인강 1강 수강 + 매일 순공 2시간 작성을 최소 목표로 고정해 보세요!`;
             }
 
             document.getElementById('ai-str-text').innerHTML = strText;
             document.getElementById('ai-weak-text').innerHTML = weakText;
             document.getElementById('ai-guide-text').innerHTML = guideText;
 
-            // 열정왕 보상 확인 (서버에서 당일 1위 데이터 조회)
+            // 오늘의 열정왕 보상 확인
             fetch(GAS_WEB_APP_URL, { redirect: 'follow' })
             .then(res => res.json())
             .then(data => {
