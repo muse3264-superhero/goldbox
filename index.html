@@ -82,10 +82,30 @@
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
             border-top: 1px solid var(--border-color); box-shadow: 0 -4px 12px rgba(0,0,0,0.05); z-index: 100;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); font-size: 0.68rem; font-weight: 600; cursor: pointer; position: relative; width: 16%; }
-        .nav-item span.icon { font-size: 1.3rem; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); font-size: 0.68rem; font-weight: 600; cursor: pointer; position: relative; width: 16%; }
+        .nav-item span.icon { font-size: 1.3rem; position: relative; }
         .nav-item.active { color: var(--primary-color); font-weight: 800; }
-        .nav-item .badge { position: absolute; top: -2px; right: 12px; background: #ef4444; color: white; border-radius: 10px; padding: 1px 5px; font-size: 0.65rem; font-weight: 800; display: none; }
+
+        /* 피드백 알림 배지 (아이콘 바로 위에 150% 크기로 정밀 밀착) */
+        .icon-wrapper { position: relative; display: inline-block; }
+        .nav-item .badge {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem; /* 150% 확대 */
+            font-weight: 900;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -182,13 +202,11 @@
             </div>
         </div>
 
-        <!-- 피드백 탭 -->
         <div id="teacher-feedback" class="tab-content">
             <div class="card">
                 <div class="card-title">🔔 선생님 피드백 & 답장 <button class="btn" onclick="fetchFeedbacksFromServer()">🔄 새로고침</button></div>
                 <div id="feedback-list-container"><p style="color: var(--text-muted); text-align: center; padding: 20px;">불러오는 중...</p></div>
                 
-                <!-- 학생 답장 작성 폼 -->
                 <div style="margin-top: 16px; background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-md);">
                     <strong style="font-size: 0.85rem; color: var(--primary-color);">💬 선생님께 답장 남기기</strong>
                     <textarea id="student-reply-input" rows="2" placeholder="선생님께 보낼 메시지를 입력하세요..." style="margin-top: 6px; font-size: 0.85rem;"></textarea>
@@ -204,11 +222,17 @@
         <div class="nav-item" onclick="switchTab('daily-plan')"><span class="icon">✏️</span><span>일간</span></div>
         <div class="nav-item" onclick="switchTab('class-checklist')"><span class="icon">📚</span><span>진도</span></div>
         <div class="nav-item" onclick="switchTab('grade-record')"><span class="icon">📊</span><span>성적</span></div>
-        <div class="nav-item" onclick="switchTab('teacher-feedback')"><span class="icon">🔔</span><span>피드백</span><span class="badge" id="feedback-count-badge">0</span></div>
+        <div class="nav-item" onclick="switchTab('teacher-feedback')">
+            <div class="icon-wrapper">
+                <span class="icon">🔔</span>
+                <span class="badge" id="feedback-count-badge">0</span>
+            </div>
+            <span>피드백</span>
+        </div>
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyLia6Of70lAZI_UNIqpQ1W70Fqws4EpjqSbkMST4tmZjgt9pfXHg7dOOBHtGJoQc7b/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0_gIiMYw4GbIqaDxrSFJVNTF0qQdT7m3DZ9itZ7Mm0bTDKExRaQSVWzyk-fGOYs1l/exec";
 
         const koreanHolidays = {
             "01-01": "신정", "03-01": "삼일절", "05-05": "어린이날", "06-06": "현충일",
@@ -548,7 +572,6 @@
             });
         }
 
-        // === [실시간 서버 피드백 연동] ===
         let fetchedFeedbacks = [];
 
         function fetchFeedbacksFromServer() {
@@ -608,7 +631,7 @@
             const unreadCount = fetchedFeedbacks.filter(f => (f.sender === "교사" || f.type === "feedback") && !readIds.includes(f.fbId)).length;
             const badge = document.getElementById('feedback-count-badge');
             
-            if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'inline-block'; }
+            if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'flex'; }
             else { badge.style.display = 'none'; }
         }
 
@@ -630,6 +653,7 @@
                 type: "reply",
                 studentId: studentId,
                 sender: studentName,
+                receiver: "교사",
                 content: replyText,
                 createdAt: new Date().toLocaleString("ko-KR")
             };
@@ -653,7 +677,6 @@
 
         function saveAllData() { saveProfile(); saveWeeklyData(); saveDailyData(); saveGradeData(); }
 
-        // === [Google 스프레드시트로 전송] ===
         function sendDataToTeacher() {
             const studentName = document.getElementById('student-name-input').value.trim();
             const studentId = document.getElementById('student-id-input').value.trim();
@@ -679,7 +702,7 @@
                 studyTime: document.getElementById('student-study-time').value || '',
                 productivity: document.getElementById('auto-productivity').value || '0%',
                 todoCount: todoRows.length,
-                todos: todoRows, // To-Do 상세 데이터 전송
+                todos: todoRows,
                 submittedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
             };
 
