@@ -55,39 +55,40 @@
         .todo-item-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 4px; margin-top: 4px; background: #e2e8f0; color: #334155; }
         .todo-item-tag.done { background: #dcfce7; color: #166534; font-weight: bold; }
 
-        .header-fb-btn { position: relative; background: #fef3c7; border: 1px solid #fde047; padding: 6px 12px; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 800; color: #b45309; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .header-fb-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 900; border: 2px solid white; display: none; }
-
-        /* 하단 탭 바 (4개 메뉴 배치) */
+        /* 하단 메뉴바 (5개) 및 알림 배지 포지셔닝 */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
             border-top: 1px solid var(--border-color); box-shadow: 0 -4px 12px rgba(0,0,0,0.05); z-index: 100;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); font-size: 0.68rem; font-weight: 600; cursor: pointer; width: 24%; position: relative; }
-        .nav-item span.icon { font-size: 1.2rem; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-muted); font-size: 0.68rem; font-weight: 600; cursor: pointer; width: 19%; position: relative; }
+        .nav-item span.icon { font-size: 1.2rem; position: relative; }
         .nav-item.active { color: var(--teacher-color); font-weight: 800; }
-        .nav-item .nav-badge { position: absolute; top: -4px; right: 18px; background: #ef4444; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; justify-content: center; display: none; }
+        
+        .icon-wrapper { position: relative; display: inline-block; }
+        .nav-item .nav-badge {
+            position: absolute; top: -6px; right: -8px; background: #ef4444; color: white;
+            border-radius: 50%; width: 16px; height: 16px; font-size: 0.65rem; font-weight: 900;
+            display: flex; align-items: center; justify-content: center; border: 2px solid white; display: none;
+        }
 
-        /* 스탯 랩 전용 스타일 */
+        /* 스탯 랩 고급 디자인 */
         .rank-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .rank-badge { width: 32px; height: 32px; border-radius: 50%; background: #e0f2fe; color: var(--teacher-color); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
-        .rank-card.top1 .rank-badge { background: #fef08a; color: #854d0e; }
-        .rank-card.top2 .rank-badge { background: #e2e8f0; color: #334155; }
-        .rank-card.top3 .rank-badge { background: #ffedd5; color: #9a3412; }
+        .rank-card.top1 { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); border: 2px solid #eab308; }
+        .rank-card.top2 { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border: 2px solid #94a3b8; }
+        .rank-card.top3 { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); border: 2px solid #f97316; }
+
+        .bar-container { background: #e2e8f0; border-radius: 8px; height: 16px; overflow: hidden; margin-top: 4px; display: flex; }
+        .bar-high { background: #10b981; height: 100%; }
+        .bar-mid { background: #3b82f6; height: 100%; }
+        .bar-low { background: #ef4444; height: 100%; }
     </style>
 </head>
 <body>
 
     <div class="app-header">
         <h2 onclick="goHome()">서인천고 교사 대시보드</h2>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <div class="header-fb-btn" onclick="switchTab('dash-messages')">
-                <span>💬 메시지</span>
-                <span class="header-fb-badge" id="teacher-unread-badge">0</span>
-            </div>
-            <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="listenRealtimeData()">🔄 새로고침</button>
-        </div>
+        <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="listenRealtimeData()">🔄 새로고침</button>
     </div>
 
     <div class="main-content">
@@ -125,7 +126,7 @@
 
                 <table>
                     <thead>
-                        <tr><th>학번</th><th>이름</th><th>학습일</th><th>순공 시간</th><th>달성도</th><th>상세/삭제</th></tr>
+                        <tr><th>학번</th><th>이름</th><th>학습일</th><th>순공 시간</th><th>달성도</th><th>상세</th></tr>
                     </thead>
                     <tbody id="teacher-student-table-body">
                         <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">구글 시트에서 데이터를 불러오는 중...</td></tr>
@@ -181,7 +182,7 @@
             </div>
         </div>
 
-        <!-- 3. 학생 메시지 전용 탭 -->
+        <!-- 3. 학생 메시지 탭 -->
         <div id="dash-messages" class="tab-content">
             <div class="card">
                 <div class="card-title">💬 학생 수신 메시지 리스트 <button class="btn" style="padding:4px 8px; font-size:0.75rem;" onclick="listenRealtimeData()">🔄 새로고침</button></div>
@@ -189,50 +190,84 @@
             </div>
         </div>
 
-        <!-- 4. 멋진 데이터 분석 메뉴: 학급 스탯 랩 (Class Stat Lab) -->
+        <!-- 4. 학급 스탯 랩 -->
         <div id="dash-statlab" class="tab-content">
             <div class="card" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; border: none;">
                 <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 4px;">📊 학급 스탯 랩 (Class Stat Lab)</div>
-                <p style="font-size: 0.8rem; opacity: 0.8;">학생들의 순공시간 및 학습 달성도를 종합 분석한 학급 랭킹과 피드백 상태입니다.</p>
+                <p style="font-size: 0.8rem; opacity: 0.85;">순공시간 및 학습 달성도 종합 분석 리포트입니다.</p>
             </div>
 
-            <!-- 오늘의 순공 열정왕 하이라이트 -->
-            <div class="card" style="border: 2px solid #fde047; background: #fefce8;" id="statlab-king-card">
-                <div style="font-size:0.85rem; font-weight:bold; color:#a16207;">👑 오늘의 순공 열정왕</div>
-                <div id="statlab-king-content" style="margin-top:6px; font-size:1.1rem; font-weight:800; color:#854d0e;">-</div>
+            <!-- 일자별 열정왕 조회 -->
+            <div class="card" style="border: 2px solid #fde047; background: #fefce8;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:0.85rem; font-weight:bold; color:#a16207;">👑 날짜별 순공 열정왕</div>
+                    <input type="date" id="statlab-king-date" value="2026-08-01" onchange="renderStatLab()" style="width:130px; font-size:0.8rem; padding:4px;">
+                </div>
+                <div id="statlab-king-content" style="margin-top:8px; font-size:1.1rem; font-weight:800; color:#854d0e;">-</div>
             </div>
 
-            <!-- 학습 종합 랭킹 -->
+            <!-- 종합 랭킹 & 접기/펼치기 -->
             <div class="card">
                 <div class="card-title">🏆 학급 학습 스코어 TOP 랭킹</div>
-                <div id="statlab-ranking-container"></div>
+                <div id="statlab-ranking-top-container"></div>
+                <div id="statlab-ranking-more-container" style="display:none; margin-top:10px;"></div>
+                <button class="btn btn-outline" id="btn-toggle-rank" style="width:100%; margin-top:8px; justify-content:center;" onclick="toggleMoreRank()">▼ 전체 학생 랭킹 더보기</button>
             </div>
 
-            <!-- 학습 달성률 구간 분포 -->
+            <!-- 달성률 시각화 시각화 차트 -->
             <div class="card">
-                <div class="card-title">📈 달성도 구간별 학생 분포</div>
-                <div style="display:flex; justify-content:space-around; text-align:center; padding: 10px 0;">
-                    <div><div style="font-size:1.4rem; font-weight:800; color:#10b981;" id="stat-dist-high">0명</div><div style="font-size:0.75rem; color:#64748b;">우수 (80% 이상)</div></div>
-                    <div><div style="font-size:1.4rem; font-weight:800; color:#3b82f6;" id="stat-dist-mid">0명</div><div style="font-size:0.75rem; color:#64748b;">보통 (50~79%)</div></div>
-                    <div><div style="font-size:1.4rem; font-weight:800; color:#ef4444;" id="stat-dist-low">0명</div><div style="font-size:0.75rem; color:#64748b;">관심 필요 (50% 미만)</div></div>
+                <div class="card-title">📈 달성도 구간별 학생 시각화 차트</div>
+                <div class="bar-container">
+                    <div class="bar-high" id="bar-high-p" style="width:0%;"></div>
+                    <div class="bar-mid" id="bar-mid-p" style="width:0%;"></div>
+                    <div class="bar-low" id="bar-low-p" style="width:0%;"></div>
                 </div>
+                <div style="display:flex; justify-content:space-around; text-align:center; padding: 12px 0 4px 0;">
+                    <div><div style="font-size:1.2rem; font-weight:800; color:#10b981;" id="stat-dist-high">0건</div><div style="font-size:0.75rem; color:#64748b;">우수 (80% 이상)</div></div>
+                    <div><div style="font-size:1.2rem; font-weight:800; color:#3b82f6;" id="stat-dist-mid">0건</div><div style="font-size:0.75rem; color:#64748b;">보통 (50~79%)</div></div>
+                    <div><div style="font-size:1.2rem; font-weight:800; color:#ef4444;" id="stat-dist-low">0건</div><div style="font-size:0.75rem; color:#64748b;">관심 (50% 미만)</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. ⚙️ 관리자 탭 (학생 관리) -->
+        <div id="dash-admin" class="tab-content">
+            <div class="card">
+                <div class="card-title">⚙️ 참여 학생 목록 & 전체 데이터 관리</div>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">학생을 삭제하면 구글 시트에 '삭제' 상태로 기록되며 대시보드의 모든 데이터에서 제거됩니다.</p>
+                <table>
+                    <thead>
+                        <tr><th>학번</th><th>이름</th><th>최초 등록일</th><th>관리</th></tr>
+                    </thead>
+                    <tbody id="admin-student-list-body">
+                        <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">불러오는 중...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- 하단 메뉴바 (4개) -->
+    <!-- 하단 메뉴바 -->
     <div class="bottom-nav">
         <div class="nav-item active" id="nav-overview" onclick="switchTab('dash-overview')"><span class="icon">📈</span><span>전체 현황</span></div>
         <div class="nav-item" id="nav-students" onclick="switchTab('dash-students')"><span class="icon">👨‍🎓</span><span>학생 점검</span></div>
-        <div class="nav-item" id="nav-messages" onclick="switchTab('dash-messages')"><span class="icon">💬</span><span>메시지</span><span class="nav-badge" id="nav-msg-badge">0</span></div>
+        <div class="nav-item" id="nav-messages" onclick="switchTab('dash-messages')">
+            <div class="icon-wrapper">
+                <span class="icon">💬</span>
+                <span class="nav-badge" id="nav-msg-badge">0</span>
+            </div>
+            <span>메시지</span>
+        </div>
         <div class="nav-item" id="nav-statlab" onclick="switchTab('dash-statlab')"><span class="icon">📊</span><span>스탯 랩</span></div>
+        <div class="nav-item" id="nav-admin" onclick="switchTab('dash-admin')"><span class="icon">⚙️</span><span>관리</span></div>
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxZQZQAMEgxwkUzjr9_jDlT-Fwx4z-KKEhIWKq4-ioHPMyt4AxlZOMu3abT1tZBOubY/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjhcCf0AzNptB_CQgnhTp1nEIG4bG9byajIpoN-7Bybp5OUIDsFTS6XM7KpvghsIVX/exec";
 
         let allFetchedSubmissions = [];
         let allFetchedFeedbacks = [];
+        let allFetchedStudents = [];
 
         function goHome() { switchTab('dash-overview'); }
 
@@ -254,6 +289,10 @@
                 document.getElementById('nav-statlab').classList.add('active');
                 renderStatLab();
             }
+            if(tabId === 'dash-admin') {
+                document.getElementById('nav-admin').classList.add('active');
+                renderAdminStudentList();
+            }
         }
 
         function cleanDateStr(dateVal) {
@@ -272,6 +311,8 @@
             .then(data => {
                 allFetchedSubmissions = Array.isArray(data.submissions) ? data.submissions : [];
                 allFetchedFeedbacks = Array.isArray(data.feedbacks) ? data.feedbacks : [];
+                allFetchedStudents = Array.isArray(data.students) ? data.students : [];
+
                 filterAndRender();
                 checkUnreadStudentReplies();
             })
@@ -282,7 +323,6 @@
             });
         }
 
-        // 미확인 메시지 체크 및 알림 배지 갱신
         function checkUnreadStudentReplies() {
             const readFbIds = JSON.parse(localStorage.getItem('teacher_read_fb_ids') || '[]');
             const replyList = allFetchedFeedbacks.filter(f => (f.type === "reply" || (f.sender !== "교사" && f.sender !== "선생님")) && !readFbIds.includes(f.fbId));
@@ -291,13 +331,11 @@
             const navBadge = document.getElementById('nav-msg-badge');
 
             if (replyList.length > 0) {
-                badge.innerText = replyList.length;
-                badge.style.display = 'flex';
-                navBadge.innerText = replyList.length;
-                navBadge.style.display = 'flex';
+                if(badge) { badge.innerText = replyList.length; badge.style.display = 'flex'; }
+                if(navBadge) { navBadge.innerText = replyList.length; navBadge.style.display = 'flex'; }
             } else {
-                badge.style.display = 'none';
-                navBadge.style.display = 'none';
+                if(badge) badge.style.display = 'none';
+                if(navBadge) navBadge.style.display = 'none';
             }
         }
 
@@ -366,10 +404,7 @@
                     <td>${displayDate}</td>
                     <td>${item.studyTime || '-'}</td>
                     <td><strong class="${prodClass}" style="color:#10b981;">${item.productivity || '0%'}</strong></td>
-                    <td>
-                        <button class="btn btn-outline" style="padding: 2px 6px; font-size:0.8rem;" onclick="viewStudentDetail('${item.id}')">보기</button>
-                        <button class="btn btn-danger" style="padding: 2px 6px; font-size:0.8rem; margin-left:4px;" onclick="deleteStudentSubmission('${item.docId}', '${item.name}')">삭제</button>
-                    </td>
+                    <td><button class="btn btn-outline" style="padding: 2px 6px; font-size:0.8rem;" onclick="viewStudentDetail('${item.id}')">보기</button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -380,13 +415,34 @@
             updateStudentSelectOptions();
         }
 
-        // 학생 기록 삭제 관리자 기능 (구글 시트 연동)
-        function deleteStudentSubmission(docId, studentName) {
-            if(!confirm(`정말 [${studentName}] 학생의 해당 날짜 제출 기록을 삭제하시겠습니까?\n(구글 시트에 '삭제' 상태로 업데이트됩니다.)`)) return;
+        // ⚙️ 관리자 탭 - 학생 일괄 삭제 처리
+        function renderAdminStudentList() {
+            const tbody = document.getElementById('admin-student-list-body');
+            tbody.innerHTML = '';
+
+            if(allFetchedStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">참여 학생이 없습니다.</td></tr>`;
+                return;
+            }
+
+            allFetchedStudents.forEach(st => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${st.id}</strong></td>
+                    <td><strong>${st.name}</strong></td>
+                    <td>${st.createdAt || '-'}</td>
+                    <td><button class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteAllStudentData('${st.id}', '${st.name}')">🗑️ 완전 삭제</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteAllStudentData(studentId, studentName) {
+            if(!confirm(`⚠️ [${studentName}] 학생을 영구 삭제하시겠습니까?\n구글 시트에 '삭제' 상태로 기록되며 전체 대시보드 데이터에서 제거됩니다.`)) return;
 
             const postData = {
-                type: "delete_submission",
-                docId: docId
+                type: "delete_student_all",
+                studentId: studentId
             };
 
             const formData = new URLSearchParams();
@@ -399,8 +455,8 @@
                 body: formData.toString()
             })
             .then(() => {
-                alert('해당 기록이 성공적으로 삭제되었습니다.');
-                listenRealtimeData(); // 대시보드 새로고침
+                alert(`[${studentName}] 학생 데이터가 삭제되었습니다.`);
+                listenRealtimeData();
             })
             .catch(err => alert('삭제 실패: ' + err));
         }
@@ -496,7 +552,6 @@
             markTeacherFeedbackAsRead(studentId);
         }
 
-        // 학생 메시지 확인 시 읽음 처리 (알림 배지 자동 차감/소멸)
         function markTeacherFeedbackAsRead(studentId) {
             let readIds = JSON.parse(localStorage.getItem('teacher_read_fb_ids') || '[]');
             const myReplies = allFetchedFeedbacks.filter(f => String(f.studentId) === String(studentId));
@@ -578,7 +633,6 @@
             .catch(err => alert('전송 실패: ' + err));
         }
 
-        // 메시지 탭 목록 렌더링
         function renderMessagesTabList() {
             const container = document.getElementById('messages-tab-container');
             container.innerHTML = '';
@@ -610,22 +664,27 @@
             });
         }
 
-        // 학급 스탯 랩 (Class Stat Lab) 데이터 분석 렌더링
+        // 스탯 랩 시각화 차트 및 더보기
         function renderStatLab() {
-            // A. 순공 열정왕 하이라이트
+            const targetKingDate = document.getElementById('statlab-king-date').value;
+            
+            // 날짜별 순공 열정왕 추적
             let maxHours = -1; let kingStudent = "-";
             
-            // B. 학생별 종합 점수 집계 (순공시간 + 달성도 합산)
             const studentStats = {};
             let highCount = 0; let midCount = 0; let lowCount = 0;
 
             allFetchedSubmissions.forEach(sub => {
+                const subDate = cleanDateStr(sub.date);
                 const id = sub.id;
                 const name = sub.name || id;
                 const hours = parseInt((String(sub.studyTime).match(/\d+/) || [0])[0]);
                 const prod = parseInt((String(sub.productivity).match(/\d+/) || [0])[0]);
 
-                if(hours > maxHours) { maxHours = hours; kingStudent = `${name} (${id}) - ${sub.studyTime}`; }
+                if(subDate === targetKingDate && hours > maxHours) {
+                    maxHours = hours;
+                    kingStudent = `👑 ${name} (${id}) - ${sub.studyTime}`;
+                }
 
                 if(!studentStats[id]) studentStats[id] = { id: id, name: name, totalHours: 0, totalProd: 0, count: 0 };
                 studentStats[id].totalHours += hours;
@@ -637,35 +696,42 @@
                 else lowCount++;
             });
 
-            document.getElementById('statlab-king-content').innerText = maxHours > 0 ? kingStudent : "아직 기록이 없습니다.";
+            document.getElementById('statlab-king-content').innerText = maxHours > -1 ? kingStudent : "선택한 날짜의 제출 기록이 없습니다.";
+
+            const total = highCount + midCount + lowCount || 1;
+            document.getElementById('bar-high-p').style.width = `${(highCount/total)*100}%`;
+            document.getElementById('bar-mid-p').style.width = `${(midCount/total)*100}%`;
+            document.getElementById('bar-low-p').style.width = `${(lowCount/total)*100}%`;
+
             document.getElementById('stat-dist-high').innerText = `${highCount}건`;
             document.getElementById('stat-dist-mid').innerText = `${midCount}건`;
             document.getElementById('stat-dist-low').innerText = `${lowCount}건`;
 
-            // 랭킹 계산
+            // 종합 랭킹 산출
             const rankArray = Object.values(studentStats).map(s => {
                 const avgProd = Math.round(s.totalProd / s.count);
-                const score = s.totalHours * 10 + avgProd; // 종합 스코어 로직
+                const score = s.totalHours * 10 + avgProd;
                 return { id: s.id, name: s.name, hours: s.totalHours, avgProd: avgProd, score: score };
             });
 
             rankArray.sort((a, b) => b.score - a.score);
 
-            const rankContainer = document.getElementById('statlab-ranking-container');
-            rankContainer.innerHTML = '';
+            const topContainer = document.getElementById('statlab-ranking-top-container');
+            const moreContainer = document.getElementById('statlab-ranking-more-container');
+            topContainer.innerHTML = ''; moreContainer.innerHTML = '';
 
             if(rankArray.length === 0) {
-                rankContainer.innerHTML = `<p style="padding:10px; color:var(--text-muted); text-align:center;">학습 데이터가 없습니다.</p>`;
+                topContainer.innerHTML = `<p style="padding:10px; color:var(--text-muted); text-align:center;">학습 데이터가 없습니다.</p>`;
                 return;
             }
 
-            rankArray.slice(0, 5).forEach((item, index) => {
+            rankArray.forEach((item, index) => {
                 const rankClass = index === 0 ? "top1" : (index === 1 ? "top2" : (index === 2 ? "top3" : ""));
                 const div = document.createElement('div');
                 div.className = `rank-card ${rankClass}`;
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="rank-badge">${index + 1}</div>
+                        <div style="font-weight:900; font-size:1.1rem; width:28px;">${index + 1}위</div>
                         <div>
                             <strong>${item.name}</strong> <span style="font-size:0.75rem; color:#64748b;">${item.id}</span>
                             <div style="font-size:0.8rem; color:#64748b;">누적 순공: ${item.hours}시간 | 평균 달성도: ${item.avgProd}%</div>
@@ -673,8 +739,22 @@
                     </div>
                     <div style="font-size:1.1rem; font-weight:800; color:var(--teacher-color);">${item.score}점</div>
                 `;
-                rankContainer.appendChild(div);
+
+                if(index < 3) topContainer.appendChild(div);
+                else moreContainer.appendChild(div);
             });
+        }
+
+        function toggleMoreRank() {
+            const moreContainer = document.getElementById('statlab-ranking-more-container');
+            const btn = document.getElementById('btn-toggle-rank');
+            if(moreContainer.style.display === 'none') {
+                moreContainer.style.display = 'block';
+                btn.innerText = "▲ 전체 학생 랭킹 접기";
+            } else {
+                moreContainer.style.display = 'none';
+                btn.innerText = "▼ 전체 학생 랭킹 더보기";
+            }
         }
 
         window.onload = function() { 
