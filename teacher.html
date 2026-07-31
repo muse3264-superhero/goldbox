@@ -24,7 +24,7 @@
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
         .app-header { background: var(--card-bg); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); z-index: 10; }
-        .app-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--teacher-color); }
+        .app-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--teacher-color); cursor: pointer; }
 
         .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
         .tab-content { display: none; }
@@ -49,6 +49,9 @@
 
         .filter-bar { background: #e0f2fe; border: 1px solid #bae6fd; padding: 12px; border-radius: var(--radius-md); margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
 
+        .todo-item-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px; margin-top: 4px; background: #e2e8f0; color: #334155; }
+        .todo-item-tag.done { background: #dcfce7; color: #166534; font-weight: bold; }
+
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff;
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
@@ -62,12 +65,13 @@
 <body>
 
     <div class="app-header">
-        <h2>서인천고 교사 대시보드</h2>
+        <!-- 타이틀 클릭 시 첫 화면(전체 현황)으로 이동 -->
+        <h2 onclick="goHome()">서인천고 교사 대시보드</h2>
         <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="listenRealtimeData()">🔄 새로고침</button>
     </div>
 
     <div class="main-content">
-        <!-- 1. 학급 전체 현황 -->
+        <!-- 1. 전체 현황 (메뉴명 수정) -->
         <div id="dash-overview" class="tab-content active">
             <div class="filter-bar">
                 <strong>📅 조회 기간 설정</strong>
@@ -88,7 +92,7 @@
                 <div class="card-title">학습 수집 현황 (구글 시트 연동)</div>
                 <table>
                     <thead>
-                        <tr><th>날짜</th><th>학생</th><th>순공</th><th>달성도</th><th>상세</th></tr>
+                        <tr><th>날짜</th><th>학생</th><th>순공 시간</th><th>달성도</th><th>상세</th></tr>
                     </thead>
                     <tbody id="teacher-student-table-body">
                         <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">구글 시트에서 데이터를 불러오는 중...</td></tr>
@@ -126,33 +130,52 @@
                         <strong>🔥 이번 주 다짐:</strong> <span id="detail-motto">-</span>
                     </div>
 
-                    <div class="card-title">일자별 세부 내역</div>
+                    <div class="card-title">일자별 세부 내역 (To-Do 목록 포함)</div>
                     <div id="detail-daily-history-container"></div>
+
+                    <!-- 피드백 작성 및 주고받은 내역 카드 -->
+                    <div class="card" style="margin-top: 20px; border: 2px solid #bae6fd; background: #f0f9ff;">
+                        <div class="card-title" style="color: #0369a1; border-bottom-color: #bae6fd;">
+                            💬 피드백 및 학생 답장 내역
+                        </div>
+                        <div id="teacher-feedback-history" style="max-height: 250px; overflow-y: auto; margin-bottom: 12px;"></div>
+                        
+                        <div>
+                            <textarea id="teacher-feedback-input" rows="2" placeholder="해당 학생에게 전달할 피드백을 작성해 주세요..."></textarea>
+                            <button class="btn" style="margin-top: 8px; width: 100%; justify-content: center;" onclick="sendTeacherFeedback()">📨 피드백 전송하기</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 하단 교사 전용 탭 바 -->
+    <!-- 하단 교사 전용 탭 바 (메뉴명 변경) -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('dash-overview')"><span class="icon">📈</span><span>학급 현황</span></div>
-        <div class="nav-item" onclick="switchTab('dash-students')"><span class="icon">👨‍🎓</span><span>학생 점검</span></div>
+        <div class="nav-item active" id="nav-overview" onclick="switchTab('dash-overview')"><span class="icon">📈</span><span>전체 현황</span></div>
+        <div class="nav-item" id="nav-students" onclick="switchTab('dash-students')"><span class="icon">👨‍🎓</span><span>학생 점검</span></div>
     </div>
 
     <script>
-        // ⚠️ 구글 Apps Script에서 새 배포 후 발급받은 URL을 복사하여 넣으세요.
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoovDGzljWrK2AM5PUsHIepRH-U7q5CxUlWH_nm-nUVDHZ-BJ0nGXBtTHgdkQ7zyBi/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyLia6Of70lAZI_UNIqpQ1W70Fqws4EpjqSbkMST4tmZjgt9pfXHg7dOOBHtGJoQc7b/exec";
 
         let allFetchedSubmissions = [];
+        let allFetchedFeedbacks = [];
+
+        function goHome() {
+            switchTab('dash-overview');
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
             
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-
-            if(tabId === 'dash-students') updateStudentSelectOptions();
+            if(tabId === 'dash-overview') document.getElementById('nav-overview').classList.add('active');
+            if(tabId === 'dash-students') {
+                document.getElementById('nav-students').classList.add('active');
+                updateStudentSelectOptions();
+            }
         }
 
         function cleanDateStr(dateVal) {
@@ -169,13 +192,14 @@
             fetch(GAS_WEB_APP_URL, { redirect: 'follow' })
             .then(res => res.json())
             .then(data => {
-                allFetchedSubmissions = Array.isArray(data) ? data : [];
+                allFetchedSubmissions = Array.isArray(data.submissions) ? data.submissions : [];
+                allFetchedFeedbacks = Array.isArray(data.feedbacks) ? data.feedbacks : [];
                 filterAndRender();
             })
             .catch(err => {
                 console.error("데이터 통신 오류:", err);
                 tbody.innerHTML = 
-                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. URL 및 새 배포 상태를 확인하세요.</td></tr>`;
+                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. URL을 확인하세요.</td></tr>`;
             });
         }
 
@@ -281,35 +305,115 @@
                 document.getElementById('detail-avg-prod').innerText = '0%';
                 document.getElementById('detail-motto').innerText = '-';
                 document.getElementById('detail-daily-history-container').innerHTML = '<p style="padding:10px; color:var(--text-muted); text-align:center;">선택한 기간에 제출 기록이 없습니다.</p>';
+            } else {
+                document.getElementById('detail-sub-count').innerText = `${myHistory.length}회`;
+                let totalProd = 0; let latestMotto = '-';
+                const dailyContainer = document.getElementById('detail-daily-history-container');
+                dailyContainer.innerHTML = '';
+
+                myHistory.forEach(record => {
+                    const prodMatch = String(record.productivity || '0').match(/\d+/);
+                    totalProd += prodMatch ? parseInt(prodMatch[0]) : 0;
+                    if(record.motto) latestMotto = record.motto;
+
+                    // 구체적인 To-Do 내역 HTML 생성
+                    let todosHtml = '';
+                    if (record.todos && Array.isArray(record.todos) && record.todos.length > 0) {
+                        todosHtml = `<div style="margin-top:6px; font-size:0.8rem;">`;
+                        record.todos.forEach(t => {
+                            const isDone = t.status === "완료" || t.checked;
+                            todosHtml += `<span class="todo-item-tag ${isDone ? 'done' : ''}">${isDone ? '✓' : '○'} ${t.text} (${t.status})</span>`;
+                        });
+                        todosHtml += `</div>`;
+                    } else {
+                        todosHtml = `<div style="font-size:0.8rem; color:#64748b; margin-top:4px;">To-Do 등록 개수: ${record.todoCount || 0}개 (상세 없음)</div>`;
+                    }
+
+                    const dayCard = document.createElement('div');
+                    dayCard.style.cssText = "background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px;";
+
+                    dayCard.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.85rem;">
+                            <strong>📅 ${cleanDateStr(record.date) || '날짜 미상'}</strong>
+                            <span>순공: ${record.studyTime || '-'} (${record.productivity || '0%'})</span>
+                        </div>
+                        ${todosHtml}
+                    `;
+                    dailyContainer.appendChild(dayCard);
+                });
+
+                document.getElementById('detail-avg-prod').innerText = `${Math.round(totalProd / myHistory.length)}%`;
+                document.getElementById('detail-motto').innerText = latestMotto;
+            }
+
+            renderStudentFeedbackHistory(studentId);
+        }
+
+        // 해당 학생과의 피드백/답장 전용 목록 출력
+        function renderStudentFeedbackHistory(studentId) {
+            const historyContainer = document.getElementById('teacher-feedback-history');
+            historyContainer.innerHTML = '';
+
+            const myFbs = allFetchedFeedbacks.filter(f => String(f.studentId) === String(studentId));
+
+            if(myFbs.length === 0) {
+                historyContainer.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted); padding:10px; text-align:center;">작성된 피드백이 없습니다.</p>`;
                 return;
             }
 
-            document.getElementById('detail-sub-count').innerText = `${myHistory.length}회`;
-            let totalProd = 0; let latestMotto = '-';
-            const dailyContainer = document.getElementById('detail-daily-history-container');
-            dailyContainer.innerHTML = '';
+            myFbs.forEach(f => {
+                const isTeacher = f.sender === "교사" || f.type === "feedback";
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = isTeacher 
+                    ? "background: #e0f2fe; border: 1px solid #7dd3fc; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 0.82rem;"
+                    : "background: #fef3c7; border: 1px solid #fde047; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 0.82rem; text-align: right;";
 
-            myHistory.forEach(record => {
-                const prodMatch = String(record.productivity || '0').match(/\d+/);
-                totalProd += prodMatch ? parseInt(prodMatch[0]) : 0;
+                const senderLabel = isTeacher ? "👨‍🏫 교사 피드백" : `🙋‍♂️ ${f.sender} 학생의 답장`;
 
-                if(record.motto) latestMotto = record.motto;
-
-                const dayCard = document.createElement('div');
-                dayCard.style.cssText = "background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; margin-bottom: 10px;";
-
-                dayCard.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
-                        <strong>📅 ${cleanDateStr(record.date) || '날짜 미상'}</strong>
-                        <span>순공: ${record.studyTime || '-'} (${record.productivity || '0%'})</span>
+                itemDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:2px;">
+                        <span>${senderLabel}</span>
+                        <span style="font-size:0.7rem; color:#64748b;">${f.createdAt}</span>
                     </div>
-                    <div style="font-size:0.8rem; color:#64748b;">To-Do 등록 개수: ${record.todoCount || 0}개</div>
+                    <div style="text-align:left;">${f.content}</div>
                 `;
-                dailyContainer.appendChild(dayCard);
+                historyContainer.appendChild(itemDiv);
             });
 
-            document.getElementById('detail-avg-prod').innerText = `${Math.round(totalProd / myHistory.length)}%`;
-            document.getElementById('detail-motto').innerText = latestMotto;
+            historyContainer.scrollTop = historyContainer.scrollHeight;
+        }
+
+        // 교사 피드백 전송 함수
+        function sendTeacherFeedback() {
+            const studentId = document.getElementById('teacher-student-select').value;
+            const content = document.getElementById('teacher-feedback-input').value.trim();
+
+            if(!studentId) { alert('학생을 먼저 선택해 주세요.'); return; }
+            if(!content) { alert('피드백 내용을 입력해 주세요.'); return; }
+
+            const fbData = {
+                type: "feedback",
+                studentId: studentId,
+                sender: "교사",
+                content: content,
+                createdAt: new Date().toLocaleString("ko-KR")
+            };
+
+            const formData = new URLSearchParams();
+            formData.append('data', JSON.stringify(fbData));
+
+            fetch(GAS_WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
+            })
+            .then(() => {
+                alert('피드백이 구글 시트에 기록되어 학생에게 즉시 연동되었습니다.');
+                document.getElementById('teacher-feedback-input').value = '';
+                listenRealtimeData(); // 새로고침
+            })
+            .catch(err => alert('전송 실패: ' + err));
         }
 
         window.onload = function() { 
