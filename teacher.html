@@ -72,9 +72,9 @@
             <div class="filter-bar">
                 <strong>📅 조회 기간 설정</strong>
                 <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="date" id="filter-start-date" onchange="filterAndRender()" style="font-size:0.8rem; padding:6px;">
+                    <input type="date" id="filter-start-date" value="2026-08-01" onchange="filterAndRender()" style="font-size:0.8rem; padding:6px;">
                     <span>~</span>
-                    <input type="date" id="filter-end-date" onchange="filterAndRender()" style="font-size:0.8rem; padding:6px;">
+                    <input type="date" id="filter-end-date" value="2026-12-31" onchange="filterAndRender()" style="font-size:0.8rem; padding:6px;">
                 </div>
             </div>
 
@@ -110,9 +110,9 @@
                 <div class="filter-bar">
                     <strong>📆 학생 상세 조회 기간</strong>
                     <div style="display: flex; gap: 6px; align-items: center;">
-                        <input type="date" id="detail-start-date" onchange="loadSelectedStudentDetail()" style="font-size:0.8rem; padding:6px;">
+                        <input type="date" id="detail-start-date" value="2026-08-01" onchange="loadSelectedStudentDetail()" style="font-size:0.8rem; padding:6px;">
                         <span>~</span>
-                        <input type="date" id="detail-end-date" onchange="loadSelectedStudentDetail()" style="font-size:0.8rem; padding:6px;">
+                        <input type="date" id="detail-end-date" value="2026-12-31" onchange="loadSelectedStudentDetail()" style="font-size:0.8rem; padding:6px;">
                     </div>
                 </div>
 
@@ -140,17 +140,10 @@
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpGrj2Tt18IIDQAfX0zZXvf1D3EizVsSbjYcKZCzNHzf-QsBUcgvI1qFYM1M3Gvb50/exec";
+        // ⚠️ 구글 Apps Script에서 새 배포 후 발급받은 URL을 복사하여 넣으세요.
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxoovDGzljWrK2AM5PUsHIepRH-U7q5CxUlWH_nm-nUVDHZ-BJ0nGXBtTHgdkQ7zyBi/exec";
 
         let allFetchedSubmissions = [];
-
-        function initDates() {
-            document.getElementById('filter-start-date').value = "2020-01-01"; // 시작일을 매우 여유 있게 설정
-            document.getElementById('filter-end-date').value = "2030-12-31";
-
-            document.getElementById('detail-start-date').value = "2020-01-01";
-            document.getElementById('detail-end-date').value = "2030-12-31";
-        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -162,11 +155,9 @@
             if(tabId === 'dash-students') updateStudentSelectOptions();
         }
 
-        // 날짜 포맷을 안전하게 YYYY-MM-DD 형태로 정규화해주는 보조 함수
         function cleanDateStr(dateVal) {
             if (!dateVal) return "";
             let str = String(dateVal).trim();
-            // 구글 시트에 ISO 포맷(T포함)이나 시각 정보가 포함되어 넘어오는 경우 YYYY-MM-DD 부분만 추출
             if (str.includes("T")) str = str.split("T")[0];
             return str;
         }
@@ -178,14 +169,13 @@
             fetch(GAS_WEB_APP_URL, { redirect: 'follow' })
             .then(res => res.json())
             .then(data => {
-                // 배열로 안전하게 받아오기
                 allFetchedSubmissions = Array.isArray(data) ? data : [];
                 filterAndRender();
             })
             .catch(err => {
                 console.error("데이터 통신 오류:", err);
                 tbody.innerHTML = 
-                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. URL을 확인하세요.</td></tr>`;
+                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. URL 및 새 배포 상태를 확인하세요.</td></tr>`;
             });
         }
 
@@ -193,10 +183,9 @@
             const startDate = document.getElementById('filter-start-date').value;
             const endDate = document.getElementById('filter-end-date').value;
 
-            // 안전한 날짜 유연 필터링
             const filtered = allFetchedSubmissions.filter(item => {
                 const itemDate = cleanDateStr(item.date);
-                if (!itemDate) return true; // 날짜가 없는 항목도 일단 표시
+                if (!itemDate) return true;
                 return itemDate >= startDate && itemDate <= endDate;
             });
 
@@ -218,7 +207,10 @@
             let totalProd = 0; let totalHours = 0;
 
             dataList.forEach(item => {
-                totalProd += parseInt(item.productivity) || 0;
+                const prodMatch = String(item.productivity || '0').match(/\d+/);
+                const prodVal = prodMatch ? parseInt(prodMatch[0]) : 0;
+                totalProd += prodVal;
+
                 const match = (String(item.studyTime) || '').match(/\d+/);
                 if(match) totalHours += parseInt(match[0]);
 
@@ -298,7 +290,9 @@
             dailyContainer.innerHTML = '';
 
             myHistory.forEach(record => {
-                totalProd += parseInt(record.productivity) || 0;
+                const prodMatch = String(record.productivity || '0').match(/\d+/);
+                totalProd += prodMatch ? parseInt(prodMatch[0]) : 0;
+
                 if(record.motto) latestMotto = record.motto;
 
                 const dayCard = document.createElement('div');
@@ -319,7 +313,6 @@
         }
 
         window.onload = function() { 
-            initDates();
             listenRealtimeData(); 
         };
     </script>
