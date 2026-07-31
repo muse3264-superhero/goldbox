@@ -82,30 +82,24 @@
             display: flex; justify-content: space-around; padding: 10px 0 20px 0;
             border-top: 1px solid var(--border-color); box-shadow: 0 -4px 12px rgba(0,0,0,0.05); z-index: 100;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); font-size: 0.68rem; font-weight: 600; cursor: pointer; position: relative; width: 16%; }
-        .nav-item span.icon { font-size: 1.3rem; position: relative; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); font-size: 0.65rem; font-weight: 600; cursor: pointer; position: relative; width: 14%; }
+        .nav-item span.icon { font-size: 1.2rem; position: relative; }
         .nav-item.active { color: var(--primary-color); font-weight: 800; }
 
-        /* 피드백 알림 배지 (아이콘 바로 위에 150% 크기로 정밀 밀착) */
         .icon-wrapper { position: relative; display: inline-block; }
         .nav-item .badge {
-            position: absolute;
-            top: -8px;
-            right: -10px;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.05rem; /* 150% 확대 */
-            font-weight: 900;
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            display: none;
+            position: absolute; top: -6px; right: -8px; background: #ef4444; color: white;
+            border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 900; border: 2px solid #ffffff; display: none;
         }
+
+        /* AI 리포트 전용 스타일 */
+        .ai-card { background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); color: white; padding: 16px; border-radius: var(--radius-lg); margin-bottom: 16px; }
+        .report-section { background: #ffffff; border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); color: var(--text-main); }
+        .report-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+
+        /* 열정왕 보상 카드 레어 이펙트 */
+        .passion-king-card { background: linear-gradient(135deg, #fef08a 0%, #facc15 100%); border: 2px solid #ca8a04; border-radius: var(--radius-lg); padding: 16px; text-align: center; color: #713f12; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4); }
     </style>
 </head>
 <body>
@@ -202,6 +196,37 @@
             </div>
         </div>
 
+        <!-- AI 학습 분석 & 열정왕 보상 탭 -->
+        <div id="student-ai-tab" class="tab-content">
+            <!-- 열정왕 보상 카드 영역 (شر 조건 달성 시 출력) -->
+            <div id="passion-king-reward-area"></div>
+
+            <div class="ai-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size: 1.1rem; font-weight: 800;">🤖 Gemini AI 학습 코칭 리포트</div>
+                    <button class="btn" style="background:#ffffff; color:#4338ca; font-size:0.75rem; padding:4px 8px;" onclick="generateAiAnalysis()">🔄 리포트 생성</button>
+                </div>
+                <p style="font-size: 0.78rem; opacity: 0.85; margin-top: 4px;">나의 순공시간과 학습 달성도를 종합 분석하여 맞춤 강점/단점 및 로드맵을 제공합니다.</p>
+            </div>
+
+            <div id="ai-report-container">
+                <div class="report-section">
+                    <div class="report-title" style="color: #2563eb;">🎯 나의 학습 강점 (Strengths)</div>
+                    <div id="ai-str-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">플래너 데이터를 바탕으로 분석 중입니다...</div>
+                </div>
+
+                <div class="report-section">
+                    <div class="report-title" style="color: #dc2626;">⚠️ 보완점 & 취약 요소 (Weaknesses)</div>
+                    <div id="ai-weak-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">플래너 데이터를 바탕으로 분석 중입니다...</div>
+                </div>
+
+                <div class="report-section">
+                    <div class="report-title" style="color: #16a34a;">🚀 앞으로의 맞춤 학습 가이드라인</div>
+                    <div id="ai-guide-text" style="font-size: 0.85rem; color: #334155; line-height: 1.4;">플래너 데이터를 바탕으로 분석 중입니다...</div>
+                </div>
+            </div>
+        </div>
+
         <div id="teacher-feedback" class="tab-content">
             <div class="card">
                 <div class="card-title">🔔 선생님 피드백 & 답장 <button class="btn" onclick="fetchFeedbacksFromServer()">🔄 새로고침</button></div>
@@ -222,6 +247,7 @@
         <div class="nav-item" onclick="switchTab('daily-plan')"><span class="icon">✏️</span><span>일간</span></div>
         <div class="nav-item" onclick="switchTab('class-checklist')"><span class="icon">📚</span><span>진도</span></div>
         <div class="nav-item" onclick="switchTab('grade-record')"><span class="icon">📊</span><span>성적</span></div>
+        <div class="nav-item" onclick="switchTab('student-ai-tab')"><span class="icon">🤖</span><span>AI분석</span></div>
         <div class="nav-item" onclick="switchTab('teacher-feedback')">
             <div class="icon-wrapper">
                 <span class="icon">🔔</span>
@@ -232,7 +258,7 @@
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxZQZQAMEgxwkUzjr9_jDlT-Fwx4z-KKEhIWKq4-ioHPMyt4AxlZOMu3abT1tZBOubY/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjhcCf0AzNptB_CQgnhTp1nEIG4bG9byajIpoN-7Bybp5OUIDsFTS6XM7KpvghsIVX/exec";
 
         const koreanHolidays = {
             "01-01": "신정", "03-01": "삼일절", "05-05": "어린이날", "06-06": "현충일",
@@ -252,6 +278,7 @@
             if(tabId === 'weekly') loadWeeklyData();
             if(tabId === 'daily-plan') loadDailyData();
             if(tabId === 'grade-record') renderGradeChart();
+            if(tabId === 'student-ai-tab') generateAiAnalysis();
             if(tabId === 'teacher-feedback') { fetchFeedbacksFromServer(); markFeedbackAsRead(); }
         }
 
@@ -570,6 +597,71 @@
                 ctx.textAlign = "center";
                 ctx.fillText(r.subject, groupX, canvas.height - 5);
             });
+        }
+
+        // === [AI 분석 리포트 & 열정왕 보상 로직] ===
+        function generateAiAnalysis() {
+            const studentId = document.getElementById('student-id-input').value.trim();
+            const studentName = document.getElementById('student-name-input').value.trim();
+            const studyTimeStr = document.getElementById('student-study-time').value || "0시간";
+            const prodStr = document.getElementById('auto-productivity').value || "0%";
+
+            const studyHours = parseInt((studyTimeStr.match(/\d+/) || [0])[0]);
+            const prodVal = parseInt((prodStr.match(/\d+/) || [0])[0]);
+
+            // 강점 / 단점 / 리포트 동적 생성
+            let strText = ""; let weakText = ""; let guideText = "";
+
+            if(studyHours >= 4 && prodVal >= 80) {
+                strText = `🔥 <strong>최상위 몰입 능력!</strong> 순공시간(${studyTimeStr})과 높은 목표 달성도(${prodStr})를 모두 유지하고 있습니다. 지속적인 순공 리듬이 잘 잡혀 있습니다.`;
+                weakText = `⚡ 고강도 학습 후 피로 누적에 주의하세요. 주말 피드백 타임을 활용해 규칙적인 휴식 시간을 배정해 보세요.`;
+                guideText = `🚀 현 기세를 유지하면서 과목별 난이도를 '상' 수준으로 끌어올리고 모의고사 실전 문제 풀이 비중을 확대하세요!`;
+            } else if(studyHours >= 2) {
+                strText = `👍 <strong>꾸준한 학습 습관 보유!</strong> 매일 성실하게 플래너를 기록하고 계획을 이행하려는 의지가 돋보입니다.`;
+                weakText = `🎯 To-Do 목록 중 '분할'되거나 '연기'되는 항목의 원인을 분석해 보세요. 초기 목표 설정 시 학습량을 과도하게 잡았을 수 있습니다.`;
+                guideText = `🚀 주요 과목(국·영·수) 순공시간 비중을 +1시간 확대하고, 하루 단위 피드백을 강화하여 '완료' 비율을 85% 이상으로 높여봅시다.`;
+            } else {
+                strText = `🌱 <strong>성장 잠재력 발휘 준비!</strong> 플래너 작성을 시작한 것 자체가 자기주도 학습의 훌륭한 첫걸음입니다.`;
+                weakText = `⏰ 순공시간 절대량 확보가 시급합니다. 스마트폰 사용 시간 및 불필요한 자투리 시간을 정돈할 필요가 있습니다.`;
+                guideText = `🚀 처음부터 무리하게 시간을 늘리지 말고 '하루 2시간 순공'과 'To-Do 3개 완수'를 1차 목표로 설정해 보세요!`;
+            }
+
+            document.getElementById('ai-str-text').innerHTML = strText;
+            document.getElementById('ai-weak-text').innerHTML = weakText;
+            document.getElementById('ai-guide-text').innerHTML = guideText;
+
+            // 열정왕 보상 확인 (서버에서 당일 1위 데이터 조회)
+            fetch(GAS_WEB_APP_URL, { redirect: 'follow' })
+            .then(res => res.json())
+            .then(data => {
+                const submissions = data.submissions || [];
+                const todayStr = new Date().toISOString().split('T')[0];
+                const todaySubmissions = submissions.filter(s => s.date === todayStr || s.date.includes("2026"));
+
+                let isKing = false;
+                if(todaySubmissions.length > 0 && studentId) {
+                    todaySubmissions.sort((a,b) => {
+                        const hA = parseInt((String(a.studyTime).match(/\d+/) || [0])[0]);
+                        const hB = parseInt((String(b.studyTime).match(/\d+/) || [0])[0]);
+                        return hB - hA;
+                    });
+                    if(String(todaySubmissions[0].id) === String(studentId) && studyHours > 0) isKing = true;
+                }
+
+                const rewardArea = document.getElementById('passion-king-reward-area');
+                if(isKing) {
+                    rewardArea.innerHTML = `
+                        <div class="passion-king-card">
+                            <div style="font-size: 1.5rem; font-weight: 900; margin-bottom: 4px;">🏆 TODAY'S PASSION KING! 👑</div>
+                            <div style="font-size: 0.95rem; font-weight: 800;">축하합니다! 오늘 우리 학급 최장 순공시간 1위에 등극했습니다!</div>
+                            <p style="font-size:0.8rem; margin-top:6px; opacity:0.9;">🔥 압도적인 열정과 집중력으로 목표를 달성했습니다. 오늘 밤은 스스로에게 칭찬을 건네보세요!</p>
+                        </div>
+                    `;
+                } else {
+                    rewardArea.innerHTML = '';
+                }
+            })
+            .catch(() => {});
         }
 
         let fetchedFeedbacks = [];
