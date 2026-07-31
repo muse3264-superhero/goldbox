@@ -144,21 +144,12 @@
 
         let allFetchedSubmissions = [];
 
-        // 기본 날짜를 이번 달 전체(1일~오늘까지)로 유연하게 설정
         function initDates() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('filter-start-date').value = "2020-01-01"; // 시작일을 매우 여유 있게 설정
+            document.getElementById('filter-end-date').value = "2030-12-31";
 
-            const startDateStr = `${year}-${month}-01`;
-            const endDateStr = `${year}-${month}-${day}`;
-
-            document.getElementById('filter-start-date').value = "2026-01-01"; // 여유 있게 연초부터 설정
-            document.getElementById('filter-end-date').value = `${year}-12-31`;
-
-            document.getElementById('detail-start-date').value = "2026-01-01";
-            document.getElementById('detail-end-date').value = `${year}-12-31`;
+            document.getElementById('detail-start-date').value = "2020-01-01";
+            document.getElementById('detail-end-date').value = "2030-12-31";
         }
 
         function switchTab(tabId) {
@@ -171,7 +162,15 @@
             if(tabId === 'dash-students') updateStudentSelectOptions();
         }
 
-        // 구글 스프레드시트 데이터 불러오기 (리디렉션 추적 옵션 추가)
+        // 날짜 포맷을 안전하게 YYYY-MM-DD 형태로 정규화해주는 보조 함수
+        function cleanDateStr(dateVal) {
+            if (!dateVal) return "";
+            let str = String(dateVal).trim();
+            // 구글 시트에 ISO 포맷(T포함)이나 시각 정보가 포함되어 넘어오는 경우 YYYY-MM-DD 부분만 추출
+            if (str.includes("T")) str = str.split("T")[0];
+            return str;
+        }
+
         function listenRealtimeData() {
             const tbody = document.getElementById('teacher-student-table-body');
             tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">구글 시트에서 데이터를 불러오는 중...</td></tr>`;
@@ -179,13 +178,14 @@
             fetch(GAS_WEB_APP_URL, { redirect: 'follow' })
             .then(res => res.json())
             .then(data => {
-                allFetchedSubmissions = data || [];
+                // 배열로 안전하게 받아오기
+                allFetchedSubmissions = Array.isArray(data) ? data : [];
                 filterAndRender();
             })
             .catch(err => {
                 console.error("데이터 통신 오류:", err);
                 tbody.innerHTML = 
-                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. 구글 앱스 스크립트 배포 상태를 확인하세요.</td></tr>`;
+                    `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">데이터를 불러오지 못했습니다. URL을 확인하세요.</td></tr>`;
             });
         }
 
@@ -193,10 +193,11 @@
             const startDate = document.getElementById('filter-start-date').value;
             const endDate = document.getElementById('filter-end-date').value;
 
-            // 날짜 필터링 (날짜 값이 비어있거나 올바른 경우 처리)
+            // 안전한 날짜 유연 필터링
             const filtered = allFetchedSubmissions.filter(item => {
-                if (!item.date) return true;
-                return item.date >= startDate && item.date <= endDate;
+                const itemDate = cleanDateStr(item.date);
+                if (!itemDate) return true; // 날짜가 없는 항목도 일단 표시
+                return itemDate >= startDate && itemDate <= endDate;
             });
 
             renderDashboard(filtered);
@@ -216,12 +217,13 @@
 
             let totalProd = 0; let totalHours = 0;
 
-            dataList.sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach(item => {
+            dataList.forEach(item => {
                 totalProd += parseInt(item.productivity) || 0;
-                const match = (item.studyTime || '').match(/\d+/);
+                const match = (String(item.studyTime) || '').match(/\d+/);
                 if(match) totalHours += parseInt(match[0]);
 
-                const displayDate = item.date ? String(item.date).slice(5) : '-';
+                const itemDateStr = cleanDateStr(item.date);
+                const displayDate = itemDateStr ? (itemDateStr.length >= 10 ? itemDateStr.slice(5) : itemDateStr) : '-';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -246,7 +248,7 @@
 
             const studentMap = {};
             allFetchedSubmissions.forEach(item => { 
-                if(item.id) studentMap[item.id] = item.name; 
+                if(item.id) studentMap[item.id] = item.name || item.id; 
             });
 
             select.innerHTML = '<option value="">학생 선택</option>';
@@ -273,7 +275,13 @@
             const startDate = document.getElementById('detail-start-date').value;
             const endDate = document.getElementById('detail-end-date').value;
 
-            const myHistory = allFetchedSubmissions.filter(item => String(item.id) === String(studentId) && item.date >= startDate && item.date <= endDate);
+            const myHistory = allFetchedSubmissions.filter(item => {
+                const itemDate = cleanDateStr(item.date);
+                const isIdMatch = String(item.id) === String(studentId);
+                if (!itemDate) return isIdMatch;
+                return isIdMatch && itemDate >= startDate && itemDate <= endDate;
+            });
+
             container.style.display = 'block';
 
             if(myHistory.length === 0) {
@@ -289,7 +297,7 @@
             const dailyContainer = document.getElementById('detail-daily-history-container');
             dailyContainer.innerHTML = '';
 
-            myHistory.sort((a, b) => String(b.date).localeCompare(String(a.date))).forEach(record => {
+            myHistory.forEach(record => {
                 totalProd += parseInt(record.productivity) || 0;
                 if(record.motto) latestMotto = record.motto;
 
@@ -298,7 +306,7 @@
 
                 dayCard.innerHTML = `
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
-                        <strong>📅 ${record.date || '날짜 미상'}</strong>
+                        <strong>📅 ${cleanDateStr(record.date) || '날짜 미상'}</strong>
                         <span>순공: ${record.studyTime || '-'} (${record.productivity || '0%'})</span>
                     </div>
                     <div style="font-size:0.8rem; color:#64748b;">To-Do 등록 개수: ${record.todoCount || 0}개</div>
